@@ -1,12 +1,17 @@
 package mission;
 
-import cucumber.api.DataTable;
-import cucumber.api.java.en.And;
-import cucumber.api.java.en.Given;
-import cucumber.api.java.en.Then;
-import cucumber.api.java.en.When;
+import io.cucumber.java.PendingException;
+import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.When;
+import io.cucumber.java.en.Then;
+import io.cucumber.datatable.DataTable;
+
+import java.util.Map;
 
 public class StepDefinition {
+
+    HomePage homePage = new HomePage();
 
     @Given("^I am on the home page$")
     public void iAmOnTheHomePage() {
@@ -15,6 +20,13 @@ public class StepDefinition {
 
     @Given("^I get the default list of users for on 1st page$")
     public void iGetTheDefaultListofusers() {
+
+    }
+
+    @Given("^I get the default list of users for on (\\d+)st page$")
+    public void i_get_the_default_list_of_users_for_on_st_page(int arg1) throws Throwable {
+        // Write code here that turns the phrase above into concrete actions
+        throw new PendingException();
     }
 
     @When("I get the list of all users within every page")
@@ -54,6 +66,20 @@ public class StepDefinition {
 
     }
 
+    @Given("^I login in with the following details$")
+    public void i_login_in_with_the_following_details(DataTable arg1) throws Throwable {
+        Map<String, String> loginData = arg1.asMap(String.class, String.class);
+        String username = loginData.get("userName");
+        String password = loginData.get("Password");
+        homePage.enterUsername(username);
+        homePage.enterPassword(password);
+        homePage.clickLoginButton();
+
+
+        throw new PendingException();
+    }
+
+
     @Given("^I wait for the user list to load$")
     public void iWaitForUserListToLoad() {
 
@@ -72,4 +98,6 @@ public class StepDefinition {
     @And("^I should see the following response message:$")
     public void iShouldSeeTheFollowingResponseMessage() {
     }
+
+
 }

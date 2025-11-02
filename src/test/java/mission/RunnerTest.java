@@ -1,47 +1,18 @@
 package mission;
 
-import cucumber.api.CucumberOptions;
-import cucumber.api.testng.CucumberFeatureWrapper;
-import cucumber.api.testng.TestNGCucumberRunner;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
+import io.cucumber.testng.AbstractTestNGCucumberTests;
+import io.cucumber.testng.CucumberOptions;
 
 @CucumberOptions(
-        features = ".",
-        glue = {"AutomationTest.mission"},
-        tags = {},
-        format = {
+        features = "src/test/java",
+        glue = {"mission"},
+        plugin = {
                 "pretty",
-                "html:test-output/cucumber-reports/cucumber-pretty",
-                "json:test-output/cucumber-reports/CucumberTestReport.json",
-                "rerun:test-output/cucumber-reports/rerun.txt",
-                "testng:test-output/cucumber-reports/testng.xml"
-        })
-public class RunnerTest {
-
-    private TestNGCucumberRunner testNGCucumberRunner;
-
-    @BeforeClass(alwaysRun = true)
-    public void setUpClass() {
-        testNGCucumberRunner = new TestNGCucumberRunner(this.getClass());
-    }
-
-    @Test(groups = "cucumber", description = "Runs Cucumber Feature", dataProvider = "features")
-    public void feature(CucumberFeatureWrapper cucumberFeature) {
-        testNGCucumberRunner.runCucumber(cucumberFeature.getCucumberFeature());
-    }
-
-    @DataProvider
-    public Object[][] features() {
-        return testNGCucumberRunner.provideFeatures();
-    }
-
-    @AfterClass(alwaysRun = true)
-    public void tearDownClass() {
-        testNGCucumberRunner.finish();
-    }
-
-
+                "html:test-output/cucumber-reports.html",
+                "json:test-output/CucumberTestReport.json",
+                "rerun:test-output/rerun.txt"
+        }
+)
+public class RunnerTest extends AbstractTestNGCucumberTests {
+        // Modern Cucumber 7 - no additional code needed!
 }
