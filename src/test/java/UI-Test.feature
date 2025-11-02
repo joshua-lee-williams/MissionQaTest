@@ -3,9 +3,9 @@ Feature: Checkout items in the basket
 
   Scenario: Check item total cost and tax
     Given I am on the home page
-    And I login in with the following details
-      | userName      | Password     |
-      | standard_user | secret_sauce |
+    And I login with the following details
+      | userName | standard_user     |
+      | Password | secret_sauce |
 
     And I add the following items to the basket
       | Sauce Labs Backpack      |
@@ -13,7 +13,7 @@ Feature: Checkout items in the basket
       | Sauce Labs Bolt T-Shirt  |
       | Sauce Labs Onesie        |
 
-    And I  should see 4 items added to the shopping cart
+    And I should see 4 items added to the shopping cart
     And I click on the shopping cart
     And I verify that the QTY count for each item should be 1
     And I remove the following item:

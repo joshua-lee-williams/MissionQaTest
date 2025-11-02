@@ -8,9 +8,9 @@ import io.cucumber.testng.CucumberOptions;
         glue = {"mission"},
         plugin = {
                 "pretty",
-                "html:test-output/cucumber-reports.html",
-                "json:test-output/CucumberTestReport.json",
-                "rerun:test-output/rerun.txt"
+                "html:test-output/cucumber-reports/cucumber-pretty.html",
+                "json:test-output/cucumber-reports/CucumberTestReport.json",
+                "rerun:test-output/cucumber-reports/rerun.txt"
         }
 )
 public class RunnerTest extends AbstractTestNGCucumberTests {

@@ -6,16 +6,22 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.When;
 import io.cucumber.java.en.Then;
 import io.cucumber.datatable.DataTable;
+import org.openqa.selenium.Alert;
+import org.testng.Assert;
 
+import java.util.List;
 import java.util.Map;
+
+import static mission.BasePage.driver;
 
 public class StepDefinition {
 
     HomePage homePage = new HomePage();
+    InventoryPage inventoryPage = new InventoryPage();
 
     @Given("^I am on the home page$")
     public void iAmOnTheHomePage() {
-        HomePage.homePage();
+        HomePage.browseToHomePageByURL();
     }
 
     @Given("^I get the default list of users for on 1st page$")
@@ -66,19 +72,44 @@ public class StepDefinition {
 
     }
 
-    @Given("^I login in with the following details$")
-    public void i_login_in_with_the_following_details(DataTable arg1) throws Throwable {
+    @Given("^I login with the following details$")
+    public void i_login_with_the_following_details(DataTable arg1) throws Throwable {
         Map<String, String> loginData = arg1.asMap(String.class, String.class);
+        System.out.println(loginData);
         String username = loginData.get("userName");
         String password = loginData.get("Password");
         homePage.enterUsername(username);
         homePage.enterPassword(password);
         homePage.clickLoginButton();
 
-
-        throw new PendingException();
+        // Handle browser-level alert/dialog
+        try {
+            Thread.sleep(2000);
+            Alert alert = driver.switchTo().alert();
+            alert.accept();  // Click OK
+            System.out.println("Dismissed browser alert");
+        } catch (Exception e) {
+            System.out.println("No alert to dismiss: " + e.getMessage());
+        }
     }
 
+    @Given("^I add the following items to the basket$")
+    public void i_add_the_following_items_to_the_basket(DataTable arg1) throws Throwable {
+        List<String> itemList = arg1.asList(String.class);
+        for(String item : itemList) {
+            System.out.println("Attempting to add: " + item);
+            inventoryPage.addItemToBasket(item);
+            Thread.sleep(1000);
+            System.out.println("Successfully added: " + item);
+        }
+        Thread.sleep(10000);
+    }
+
+    @Given("^I should see (\\d+) items added to the shopping cart$")
+    public void i_should_see_items_added_to_the_shopping_cart(int arg1) throws Throwable {
+        int actualNumberOfItemsInShoppingCart = inventoryPage.getNumberOfItemsInShoppingCart();
+        Assert.assertEquals(actualNumberOfItemsInShoppingCart, arg1);
+    }
 
     @Given("^I wait for the user list to load$")
     public void iWaitForUserListToLoad() {

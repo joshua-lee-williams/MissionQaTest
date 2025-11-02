@@ -1,8 +1,13 @@
 package mission;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.time.Duration;
 
 public class HomePage extends BasePage {
 
@@ -34,12 +39,17 @@ public class HomePage extends BasePage {
     }
 
     public void login(String username, String password) {
-        enterUsername(username);
-        enterPassword(password);
-        clickLoginButton();
+        if (isLoaded()) {
+            enterUsername(username);
+            enterPassword(password);
+            clickLoginButton();
+        } else {
+            throw new RuntimeException("HomePage did not load!");
+        }
+
     }
 
-    public static void homePage() {
+    public static void browseToHomePageByURL() {
         driver.get(LoadProp.getProperty("url"));
     }
 }
