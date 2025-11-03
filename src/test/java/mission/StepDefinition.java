@@ -198,8 +198,9 @@ public class StepDefinition {
     @Then("^a Tax rate of (\\d+) % is applied to the total$")
     public void a_Tax_rate_of_is_applied_to_the_total(double taxRate) throws Throwable {
         if (checkoutOverviewPage.isLoaded()) {
-            taxRate = taxRate / 100;
-            Assert.assertTrue(checkoutOverviewPage.getTax() == checkoutOverviewPage.getSubtotal() * taxRate);
+            double expectedTaxAmount = checkoutOverviewPage.getSubtotal() * taxRate / 100;
+            double actualTaxAmount = checkoutOverviewPage.getTax();
+            Assert.assertTrue(Math.abs(expectedTaxAmount - actualTaxAmount) < 0.01);
         } else {
             throw new RuntimeException("Checkout overview page did not load.");
         }
