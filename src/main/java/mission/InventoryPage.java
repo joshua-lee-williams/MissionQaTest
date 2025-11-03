@@ -40,4 +40,8 @@ public class InventoryPage extends BasePage {
     public int getNumberOfItemsInShoppingCart() {
         return Integer.parseInt(shoppingCartBadge.getText());
     }
+
+    public void clickShoppingCartBadge() {
+        shoppingCartBadge.click();
+    }
 }

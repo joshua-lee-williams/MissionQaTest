@@ -22,6 +22,7 @@ public class StepDefinition {
 
     HomePage homePage = new HomePage();
     InventoryPage inventoryPage = new InventoryPage();
+    ShoppingCartPage shoppingCartPage = new ShoppingCartPage();
 
     @Given("^I am on the home page$")
     public void iAmOnTheHomePage() {
@@ -81,16 +82,11 @@ public class StepDefinition {
         System.out.println("========== LOGIN STARTING ==========");
         System.err.println("ERROR STREAM TEST - THIS SHOULD SHOW IN RED");
         Map<String, String> loginData = arg1.asMap(String.class, String.class);
-        System.out.println(loginData);
         String username = loginData.get("userName");
         String password = loginData.get("Password");
         homePage.enterUsername(username);
         homePage.enterPassword(password);
         homePage.clickLoginButton();
-
-        // Handle browser-level alert/dialog
-        Set<String> myWindowHandles = driver.getWindowHandles();
-        System.out.println(myWindowHandles);
     }
 
     @Given("^I add the following items to the basket$")
@@ -106,9 +102,33 @@ public class StepDefinition {
     }
 
     @Given("^I should see (\\d+) items added to the shopping cart$")
-    public void i_should_see_items_added_to_the_shopping_cart(int arg1) throws Throwable {
+    public void i_should_see_items_added_to_the_shopping_cart(int expectedNumberOfItems) throws Throwable {
         int actualNumberOfItemsInShoppingCart = inventoryPage.getNumberOfItemsInShoppingCart();
-        Assert.assertEquals(actualNumberOfItemsInShoppingCart, arg1);
+        Assert.assertEquals(actualNumberOfItemsInShoppingCart, expectedNumberOfItems);
+    }
+
+    @Given("^I click on the shopping cart$")
+    public void i_click_on_the_shopping_cart() throws Throwable {
+        inventoryPage.clickShoppingCartBadge();
+    }
+
+    @Given("^I verify that the QTY count for each item should be (\\d+)$")
+    public void i_verify_that_the_QTY_count_for_each_item_should_be(int expectedQuantity) throws Throwable {
+        if (shoppingCartPage.isLoaded()) {
+            List<Integer> quantities = shoppingCartPage.getAllQuantities();
+
+            System.out.println("Number of items in cart: " + quantities.size());
+            System.out.println("Quantities: " + quantities);
+
+            for (int i = 0; i < quantities.size(); i++) {
+                Assert.assertEquals(quantities.get(i).intValue(), expectedQuantity,
+                        "Item " + (i+1) + " quantity mismatch!");
+            }
+
+            System.out.println("All items have correct quantity: " + expectedQuantity);
+        } else {
+            throw new RuntimeException("Shopping Cart page did not load.");
+        }
     }
 
     @Given("^I wait for the user list to load$")

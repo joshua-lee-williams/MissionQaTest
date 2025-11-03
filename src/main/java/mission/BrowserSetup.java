@@ -36,12 +36,8 @@ public class BrowserSetup extends BasePage {
             WebDriverManager.chromedriver().setup();
             ChromeOptions options = new ChromeOptions();
             Map<String, Object> prefs = new HashMap<>();
-            prefs.put("credentials_enable_service", false);
-            prefs.put("profile.password_manager_enabled", false);
-            prefs.put("safebrowsing.enabled", false);
-            prefs.put("credentials_enable_service", false);
-            prefs.put("profile.password_manager_enabled", false);
             prefs.put("profile.password_manager_leak_detection", false);
+            options.addArguments("start-maximized");
             options.setExperimentalOption("prefs", prefs);
             // Initialize ChromeDriver with these options
             driver = new ChromeDriver(options);
