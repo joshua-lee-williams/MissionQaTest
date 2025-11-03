@@ -24,6 +24,7 @@ public class StepDefinition {
     InventoryPage inventoryPage = new InventoryPage();
     ShoppingCartPage shoppingCartPage = new ShoppingCartPage();
     CheckoutPage checkoutPage = new CheckoutPage();
+    CheckoutOverviewPage checkoutOverviewPage = new CheckoutOverviewPage();
 
     @Given("^I am on the home page$")
     public void iAmOnTheHomePage() {
@@ -164,6 +165,43 @@ public class StepDefinition {
             checkoutPage.enterLastName(lastName);
         } else {
             throw new RuntimeException("Checkout page did not load.");
+        }
+    }
+
+    @Given("^I type \"([^\"]*)\" for ZIP/Postal Code$")
+    public void i_type_for_ZIP_Postal_Code(String zipcode) throws Throwable {
+        if (checkoutPage.isLoaded()) {
+            checkoutPage.enterZipcode(zipcode);
+        } else {
+            throw new RuntimeException("Checkout page did not load.");
+        }
+    }
+
+    @When("^I click on the CONTINUE button$")
+    public void i_click_on_the_CONTINUE_button() throws Throwable {
+        if (checkoutPage.isLoaded()) {
+            checkoutPage.clickContinueButton();
+        } else {
+            throw new RuntimeException("Checkout page did not load.");
+        }
+    }
+
+    @Then("^Item total will be equal to the total of items on the list$")
+    public void item_total_will_be_equal_to_the_total_of_items_on_the_list() throws Throwable {
+        if (checkoutOverviewPage.isLoaded()) {
+            Assert.assertTrue(checkoutOverviewPage.verifySubtotalIsCorrect());
+        } else {
+            throw new RuntimeException("Checkout overview page did not load.");
+        }
+    }
+
+    @Then("^a Tax rate of (\\d+) % is applied to the total$")
+    public void a_Tax_rate_of_is_applied_to_the_total(double taxRate) throws Throwable {
+        if (checkoutOverviewPage.isLoaded()) {
+            taxRate = taxRate / 100;
+            Assert.assertTrue(checkoutOverviewPage.getTax() == checkoutOverviewPage.getSubtotal() * taxRate);
+        } else {
+            throw new RuntimeException("Checkout overview page did not load.");
         }
     }
 
