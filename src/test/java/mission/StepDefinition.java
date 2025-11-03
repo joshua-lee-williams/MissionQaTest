@@ -8,13 +8,17 @@ import io.cucumber.java.en.Then;
 import io.cucumber.datatable.DataTable;
 import org.openqa.selenium.Alert;
 import org.testng.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static mission.BasePage.driver;
 
 public class StepDefinition {
+    private static final Logger logger = LoggerFactory.getLogger(StepDefinition.class);
 
     HomePage homePage = new HomePage();
     InventoryPage inventoryPage = new InventoryPage();
@@ -74,6 +78,8 @@ public class StepDefinition {
 
     @Given("^I login with the following details$")
     public void i_login_with_the_following_details(DataTable arg1) throws Throwable {
+        System.out.println("========== LOGIN STARTING ==========");
+        System.err.println("ERROR STREAM TEST - THIS SHOULD SHOW IN RED");
         Map<String, String> loginData = arg1.asMap(String.class, String.class);
         System.out.println(loginData);
         String username = loginData.get("userName");
@@ -83,24 +89,18 @@ public class StepDefinition {
         homePage.clickLoginButton();
 
         // Handle browser-level alert/dialog
-        try {
-            Thread.sleep(2000);
-            Alert alert = driver.switchTo().alert();
-            alert.accept();  // Click OK
-            System.out.println("Dismissed browser alert");
-        } catch (Exception e) {
-            System.out.println("No alert to dismiss: " + e.getMessage());
-        }
+        Set<String> myWindowHandles = driver.getWindowHandles();
+        System.out.println(myWindowHandles);
     }
 
     @Given("^I add the following items to the basket$")
     public void i_add_the_following_items_to_the_basket(DataTable arg1) throws Throwable {
         List<String> itemList = arg1.asList(String.class);
         for(String item : itemList) {
-            System.out.println("Attempting to add: " + item);
+            logger.info("Attempting to add: " + item);
             inventoryPage.addItemToBasket(item);
             Thread.sleep(1000);
-            System.out.println("Successfully added: " + item);
+            logger.info("Successfully added: " + item);
         }
         Thread.sleep(10000);
     }

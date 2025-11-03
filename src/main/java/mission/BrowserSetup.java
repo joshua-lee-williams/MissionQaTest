@@ -34,7 +34,17 @@ public class BrowserSetup extends BasePage {
         if (browser.equalsIgnoreCase("Chrome")) {
             //System.setProperty("webdriver.chrome.driver", CHROME_WIN);
             WebDriverManager.chromedriver().setup();
-            driver = new ChromeDriver();
+            ChromeOptions options = new ChromeOptions();
+            Map<String, Object> prefs = new HashMap<>();
+            prefs.put("credentials_enable_service", false);
+            prefs.put("profile.password_manager_enabled", false);
+            prefs.put("safebrowsing.enabled", false);
+            prefs.put("credentials_enable_service", false);
+            prefs.put("profile.password_manager_enabled", false);
+            prefs.put("profile.password_manager_leak_detection", false);
+            options.setExperimentalOption("prefs", prefs);
+            // Initialize ChromeDriver with these options
+            driver = new ChromeDriver(options);
         } else if (browser.equalsIgnoreCase("edge")) {
             //System.setProperty("webdriver.edge.driver", EDGE);
             WebDriverManager.edgedriver().setup();
@@ -51,6 +61,7 @@ public class BrowserSetup extends BasePage {
             //System.setProperty("webdriver.chrome.driver", CHROME_MAC);
             ChromeOptions chromeOptions = new ChromeOptions();
             chromeOptions.addArguments("--headless");
+            chromeOptions.addArguments("start-maximized");
             WebDriverManager.chromedriver().setup();
             driver = new ChromeDriver(chromeOptions);
         } else if (browser.equalsIgnoreCase("api")) {
