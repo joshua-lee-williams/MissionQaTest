@@ -6,11 +6,13 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.When;
 import io.cucumber.java.en.Then;
 import io.cucumber.datatable.DataTable;
+import io.restassured.response.Response;
 import org.openqa.selenium.Alert;
 import org.testng.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,6 +27,18 @@ public class StepDefinition {
     ShoppingCartPage shoppingCartPage = new ShoppingCartPage();
     CheckoutPage checkoutPage = new CheckoutPage();
     CheckoutOverviewPage checkoutOverviewPage = new CheckoutOverviewPage();
+    private ApiClient apiClient;
+    private Response response;
+    private int totalUsers;
+    private int totalPages;
+    private List<Integer> allUserIds;
+
+    private ApiClient getApiClient() {
+        if (apiClient == null) {
+            apiClient = new ApiClient();
+        }
+        return apiClient;
+    }
 
     @Given("^I am on the home page$")
     public void iAmOnTheHomePage() {
@@ -32,23 +46,65 @@ public class StepDefinition {
     }
 
     @Given("^I get the default list of users for on 1st page$")
-    public void iGetTheDefaultListofusers() {
+    public void i_get_first_page_users() {
+        System.out.println("=== Getting first page of users ===");
 
+        // Get page 1
+        response = getApiClient().get("/api/users?page=1");
+
+        // Extract total users and total pages from response
+        totalUsers = getApiClient().getJsonPathInt("total");
+        totalPages = getApiClient().getJsonPathInt("total_pages");
+
+        System.out.println("Total users: " + totalUsers);
+        System.out.println("Total pages: " + totalPages);
+
+        // Verify we got a successful response
+        Assert.assertEquals(getApiClient().getStatusCode(), 200,
+                "Failed to get first page of users");
     }
 
-    @Given("^I get the default list of users for on (\\d+)st page$")
-    public void i_get_the_default_list_of_users_for_on_st_page(int arg1) throws Throwable {
-        // Write code here that turns the phrase above into concrete actions
-        throw new PendingException();
+    @When("^I get the list of all users within every page$")
+    public void i_get_all_users_from_all_pages() {
+        System.out.println("=== Fetching all users from all pages ===");
+
+        allUserIds.clear(); // Clear the list before populating
+
+        // Loop through all pages
+        for (int page = 1; page <= totalPages; page++) {
+            System.out.println("Fetching page " + page + " of " + totalPages);
+
+            response = apiClient.get("/api/users?page=" + page);
+
+            // Verify successful response
+            if (apiClient.getStatusCode() != 200) {
+                Assert.fail("Failed to fetch page " + page);
+            }
+
+            // Extract user IDs from the data array
+            List<Map<String, Object>> users = response.jsonPath().getList("data");
+
+            for (Map<String, Object> user : users) {
+                Integer userId = (Integer) user.get("id");
+                allUserIds.add(userId);
+                System.out.println("  User ID: " + userId +
+                        ", Name: " + user.get("first_name") + " " + user.get("last_name"));
+            }
+        }
+
+        System.out.println("Total user IDs collected: " + allUserIds.size());
     }
 
-    @When("I get the list of all users within every page")
-    public void iGetTheListOfAllUsers() {
-    }
+    @Then("^I should see total users count equals the number of user ids$")
+    public void verify_total_users_equals_collected_ids() {
+        System.out.println("=== Verification ===");
+        System.out.println("Expected total users: " + totalUsers);
+        System.out.println("Actual user IDs collected: " + allUserIds.size());
 
-    @Then("I should see total users count equals the number of user ids")
-    public void iShouldMatchTotalCount() {
+        Assert.assertEquals(allUserIds.size(), totalUsers,
+                "Total users count does not match the number of user IDs collected!");
 
+        System.out.println("✓ Verification passed: Total users = " + totalUsers);
     }
 
     @Given("I make a search for user (.*)")
