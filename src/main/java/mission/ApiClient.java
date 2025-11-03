@@ -10,16 +10,19 @@ import java.util.Map;
 public class ApiClient {
 
     private String baseUrl;
+    private String apiKey;
     private Response response;
     private RequestSpecification request;
 
     public ApiClient() {
         this.baseUrl = "https://reqres.in";
+        this.apiKey = LoadProp.getProperty("apiKey");
         RestAssured.baseURI = baseUrl;
     }
 
     public ApiClient(String baseUrl) {
         this.baseUrl = baseUrl;
+        this.apiKey = LoadProp.getProperty("apiKey");
         RestAssured.baseURI = baseUrl;
     }
 
@@ -29,7 +32,8 @@ public class ApiClient {
     private RequestSpecification initializeRequest() {
         request = RestAssured.given()
                 .header("Content-Type", "application/json")
-                .header("Accept", "application/json");
+                .header("Accept", "application/json")
+                .header("x-api-key", apiKey);
         return request;
     }
 

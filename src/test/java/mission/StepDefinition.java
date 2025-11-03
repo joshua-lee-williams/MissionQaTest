@@ -31,7 +31,7 @@ public class StepDefinition {
     private Response response;
     private int totalUsers;
     private int totalPages;
-    private List<Integer> allUserIds;
+    private List<Integer> allUserIds = new ArrayList<>();
 
     private ApiClient getApiClient() {
         if (apiClient == null) {
@@ -67,8 +67,9 @@ public class StepDefinition {
     @When("^I get the list of all users within every page$")
     public void i_get_all_users_from_all_pages() {
         System.out.println("=== Fetching all users from all pages ===");
-
-        allUserIds.clear(); // Clear the list before populating
+        if (allUserIds != null) {
+            allUserIds.clear(); // Clear the list before populating
+        }
 
         // Loop through all pages
         for (int page = 1; page <= totalPages; page++) {
@@ -107,13 +108,25 @@ public class StepDefinition {
         System.out.println("✓ Verification passed: Total users = " + totalUsers);
     }
 
-    @Given("I make a search for user (.*)")
-    public void iMakeASearchForUser(String sUserID) {
-
+    @Given("I make a search for user {int}")
+    public void iMakeASearchForUser(Integer userIDToSearch) {
+        logger.info("Making a search for userID: " + userIDToSearch);
+        response = getApiClient().get("/api/users/" + userIDToSearch);
     }
 
     @Then("I should see the following user data")
     public void IShouldSeeFollowingUserData(DataTable dt) {
+        Map<String, String> expectedUserData = dt.asMap();
+        System.out.println(expectedUserData);
+        String expectedFirstName = expectedUserData.get("first_name");
+        System.out.println("Expected first name is: " + expectedFirstName);
+        String expectedEmail = expectedUserData.get("email");
+        System.out.println("Expected email is: " + expectedEmail);
+        String actualFirstName = response.jsonPath().getString("data.first_name");
+        String actualEmail = response.jsonPath().getString("data.email");
+
+        Assert.assertEquals(expectedFirstName, actualFirstName);
+        Assert.assertEquals(expectedEmail, actualEmail);
     }
 
     @Then("I receive error code (.*) in response")

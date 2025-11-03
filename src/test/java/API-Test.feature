@@ -10,8 +10,8 @@ Feature: API test
   Scenario: Should see SINGLE USER data
     Given I make a search for user 3
     Then I should see the following user data
-      | first_name | email               |
-      | Emma       | emma.wong@reqres.in |
+      | first_name | Emma                |
+      | email      | emma.wong@reqres.in |
 
 
   Scenario: Should see SINGLE USER NOT FOUND error code
