@@ -23,6 +23,7 @@ public class StepDefinition {
     HomePage homePage = new HomePage();
     InventoryPage inventoryPage = new InventoryPage();
     ShoppingCartPage shoppingCartPage = new ShoppingCartPage();
+    CheckoutPage checkoutPage = new CheckoutPage();
 
     @Given("^I am on the home page$")
     public void iAmOnTheHomePage() {
@@ -128,6 +129,41 @@ public class StepDefinition {
             System.out.println("All items have correct quantity: " + expectedQuantity);
         } else {
             throw new RuntimeException("Shopping Cart page did not load.");
+        }
+    }
+
+    @Given("^I remove the following item:$")
+    public void i_remove_the_following_item(DataTable itemsToRemove) throws Throwable {
+        List<String> itemsToRemoveList = itemsToRemove.asList();
+        for(String item:itemsToRemoveList) {
+            shoppingCartPage.removeItemFromBasket(item);
+        }
+    }
+
+    @Given("^I click on the CHECKOUT button$")
+    public void i_click_on_the_CHECKOUT_button() throws Throwable {
+        if (shoppingCartPage.isLoaded()) {
+            shoppingCartPage.clickCheckoutButton();
+        } else {
+            throw new RuntimeException("Shopping Cart page did not load.");
+        }
+    }
+
+    @Given("^I type \"([^\"]*)\" for First Name$")
+    public void i_type_for_First_Name(String firstName) throws Throwable {
+        if (checkoutPage.isLoaded()) {
+            checkoutPage.enterFirstName(firstName);
+        } else {
+            throw new RuntimeException("Checkout page did not load.");
+        }
+    }
+
+    @Given("^I type \"([^\"]*)\" for Last Name$")
+    public void i_type_for_Last_Name(String lastName) throws Throwable {
+        if (checkoutPage.isLoaded()) {
+            checkoutPage.enterLastName(lastName);
+        } else {
+            throw new RuntimeException("Checkout page did not load.");
         }
     }
 

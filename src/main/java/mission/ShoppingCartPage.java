@@ -30,6 +30,11 @@ public class ShoppingCartPage extends BasePage {
     @FindBy(id = "shopping_cart_container")
     private WebElement shoppingCartIcon;
 
+    @FindBy(id = "checkout")
+    private WebElement checkoutButton;
+
+
+
     /**
      * Get the number of items in the cart
      */
@@ -45,4 +50,21 @@ public class ShoppingCartPage extends BasePage {
                 .map(element -> Integer.parseInt(element.getText()))
                 .collect(Collectors.toList());
     }
+
+    public void removeItemFromBasket(String itemName) {
+        String buttonId = "remove-" + itemName.toLowerCase().replace(" ", "-");
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement removeFromCartButton = wait.until(ExpectedConditions.elementToBeClickable(By.id(buttonId)));
+
+        removeFromCartButton.click();
+
+        System.out.println("Removed from basket: " + itemName);
+    }
+
+    public void clickCheckoutButton() {
+        checkoutButton.click();
+    }
+
+
 }
