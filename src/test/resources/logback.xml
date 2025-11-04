@@ -14,10 +14,6 @@
     <!-- Turn off REST Assured verbose logging -->
     <logger name="io.restassured" level="WARN"/>
 
-    <!-- Silence Selenium WebSocket warnings -->
-    <logger name="org.openqa.selenium.remote.http" level="ERROR"/>
-    <logger name="org.openqa.selenium" level="ERROR"/>
-
     <!-- Keep primary application logs -->
     <logger name="mission" level="INFO"/>
 
