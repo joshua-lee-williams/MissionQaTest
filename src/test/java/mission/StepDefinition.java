@@ -12,10 +12,7 @@ import org.testng.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static mission.BasePage.driver;
 
@@ -109,7 +106,7 @@ public class StepDefinition {
     }
 
     @Given("I make a search for user {int}")
-    public void iMakeASearchForUser(Integer userIDToSearch) {
+    public void iMakeASearchForUser(int userIDToSearch) {
         logger.info("Making a search for userID: " + userIDToSearch);
         response = getApiClient().get("/api/users/" + userIDToSearch);
     }
@@ -119,9 +116,7 @@ public class StepDefinition {
         Map<String, String> expectedUserData = dt.asMap();
         System.out.println(expectedUserData);
         String expectedFirstName = expectedUserData.get("first_name");
-        System.out.println("Expected first name is: " + expectedFirstName);
         String expectedEmail = expectedUserData.get("email");
-        System.out.println("Expected email is: " + expectedEmail);
         String actualFirstName = response.jsonPath().getString("data.first_name");
         String actualEmail = response.jsonPath().getString("data.email");
 
@@ -129,23 +124,66 @@ public class StepDefinition {
         Assert.assertEquals(expectedEmail, actualEmail);
     }
 
-    @Then("I receive error code (.*) in response")
-    public void iReceiveErrorCodeInResponse(int responseCode) {
-
+    @Then("I receive error code {int} in response")
+    public void iReceiveErrorCodeInResponse(int expectedResponseCode) {
+        int actualResponseCode = response.getStatusCode();
+        Assert.assertEquals(expectedResponseCode, actualResponseCode);
     }
 
-    @Given("I create a user with following (.*) (.*)")
-    public void iCreateUserWithFollowing(String sUsername, String sJob) {
+    @Given("^I create a user with following (.+) (.+)$")
+    public void i_create_user_with_name_and_job(String name, String job) throws Throwable {
+        System.out.println("=== Creating User ===");
+        System.out.println("Name: " + name);
+        System.out.println("Job: " + job);
+
+        // Build JSON request body
+        String requestBody = String.format("{\"name\": \"%s\", \"job\": \"%s\"}", name, job);
+
+        // Send POST request
+        apiClient = getApiClient();
+        response = apiClient.post("/api/users", requestBody);
+
+        // Store response for verification
+        System.out.println("User created with status: " + apiClient.getStatusCode());
     }
 
-    @Then("response should contain the following data")
-    public void iReceiveErrorCodeInResponse(DataTable dt) {
+    @Then("^response should contain the following data$")
+    public void response_should_contain_data(DataTable dataTable) throws Throwable {
+        List<String> expectedFields = dataTable.asList(String.class);
 
+        for (String field : expectedFields) {
+            String fieldValue = apiClient.getJsonPath(field);
+            Assert.assertNotNull(fieldValue, "Field '" + field + "' not found in response");
+            System.out.println("✓ " + field + ": " + fieldValue);
+        }
     }
 
-    @Given("I login unsuccessfully with the following data")
-    public void iLoginSuccesfullyWithFollowingData(DataTable dt) {
+    @Given("^I login unsuccessfully with the following data$")
+    public void i_login_unsuccessfully(DataTable dataTable) throws Throwable {
+        // Convert DataTable to Map
+        Map<String, String> loginData = dataTable.asMap(String.class, String.class);
 
+        String email = loginData.get("Email");
+        String password = loginData.getOrDefault("Password", "");
+        if (password == null) { password = "";}
+
+        System.out.println("=== Attempting Login ===");
+        System.out.println("Email: " + email);
+        System.out.println("Password: " + (password.isEmpty() ? "(empty)" : password));
+
+        // Build request body
+        String requestBody = "{"
+                + "\"email\": \"" + email + "\"";
+
+        // Only add password if not empty
+        if (password != null && !password.isEmpty()) {
+            requestBody += ",\"password\": \"" + password + "\"";
+        }
+
+        requestBody += "}";
+
+        // Send POST request
+        response = getApiClient().post("/api/login", requestBody);
     }
 
     @Given("^I login with the following details$")
@@ -276,22 +314,107 @@ public class StepDefinition {
     }
 
     @Given("^I wait for the user list to load$")
-    public void iWaitForUserListToLoad() {
+    public void i_wait_for_user_list_to_load() throws Throwable {
+        System.out.println("=== Fetching Users with Delay ===");
 
+        // ReqRes API has a delay parameter: /api/users?delay=3
+        apiClient = getApiClient();
+
+        long startTime = System.currentTimeMillis();
+        response = apiClient.get("/api/users?delay=3");
+        long endTime = System.currentTimeMillis();
+
+        long responseTime = endTime - startTime;
+        System.out.println("Response received after: " + responseTime + " ms");
+
+        // Verify we got a successful response
+        Assert.assertEquals(apiClient.getStatusCode(), 200,
+                "Failed to load user list");
+
+        System.out.println("✓ User list loaded successfully with delay");
     }
 
-    @Then("I should see that every user has a unique id")
-    public void iShouldSeeThatEveryUserHasAUniqueID() {
+    @Then("^I should see that every user has a unique id$")
+    public void i_should_see_unique_user_ids() throws Throwable {
+        System.out.println("=== Verifying Unique User IDs ===");
 
-        // Please not that we need to check all values are unique in the list.
+        // Get all users from the response
+        List<Map<String, Object>> users = response.jsonPath().getList("data");
+
+        // Extract all user IDs
+        List<Integer> userIds = new ArrayList<>();
+        for (Map<String, Object> user : users) {
+            Integer userId = (Integer) user.get("id");
+            userIds.add(userId);
+            System.out.println("User ID: " + userId +
+                    ", Name: " + user.get("first_name") + " " + user.get("last_name"));
+        }
+
+        // Check for duplicates using a Set
+        Set<Integer> uniqueIds = new HashSet<>(userIds);
+
+        System.out.println("Total users: " + userIds.size());
+        System.out.println("Unique IDs: " + uniqueIds.size());
+
+        // Verify all IDs are unique
+        Assert.assertEquals(userIds.size(), uniqueIds.size(),
+                "Duplicate user IDs found! Some users have the same ID.");
+
+        System.out.println("✓ All user IDs are unique");
     }
 
     @Then("^I should get a response code of (\\d+)$")
-    public void iShouldGetAResponseCodeOf(int responseCode) {
+    public void iShouldGetAResponseCodeOf(int expectedResponseCode) {
+        Assert.assertEquals(expectedResponseCode, response.getStatusCode());
     }
 
-    @And("^I should see the following response message:$")
-    public void iShouldSeeTheFollowingResponseMessage() {
+    @Then("^I should see the following response message:$")
+    public void i_should_see_response_message(DataTable dataTable) throws Throwable {
+        String expectedPattern = dataTable.asList(String.class).get(0);
+
+        System.out.println("=== Verifying Response Message ===");
+        System.out.println("Expected pattern: " + expectedPattern);
+
+        // Parse the field name and expected value
+        // Input: "error": "Missing password"
+        // Output: fieldName = "error", expectedValue = "Missing password"
+
+        String fieldName = "";
+        String expectedValue = "";
+
+        if (expectedPattern.contains(":")) {
+            String[] parts = expectedPattern.split(":", 2); // Split only on first colon
+
+            // Extract field name (remove quotes and whitespace)
+            fieldName = parts[0].trim()
+                    .replace("\"", "")
+                    .replace("'", "")
+                    .trim();
+
+            // Extract expected value (remove quotes, commas, and whitespace)
+            expectedValue = parts[1].trim()
+                    .replace("\"", "")
+                    .replace("'", "")
+                    .replace(",", "")
+                    .trim();
+        } else {
+            Assert.fail("Expected pattern must be in format: \"field\": \"value\"");
+        }
+
+        System.out.println("Field name: " + fieldName);
+        System.out.println("Expected value: " + expectedValue);
+
+        // Get the actual value from the JSON response using the field name
+        String actualValue = apiClient.getJsonPath(fieldName);
+
+        System.out.println("Actual value from response: " + actualValue);
+
+        // Compare expected vs actual
+        Assert.assertEquals(actualValue, expectedValue,
+                "Field '" + fieldName + "' does not match! " +
+                        "Expected: '" + expectedValue + "', but got: '" + actualValue + "'");
+
+        System.out.println("✓ Field '" + fieldName + "' matches expected value: " + expectedValue);
     }
 
 

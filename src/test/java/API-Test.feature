@@ -22,7 +22,10 @@ Feature: API test
   Scenario Outline: CREATE a user
     Given I create a user with following <Name> <Job>
     Then response should contain the following data
-      | name | job | id | createdAt |
+      | name      |
+      | job       |
+      | id        |
+      | createdAt |
 
     Examples:
       | Name  | Job     |
@@ -32,14 +35,14 @@ Feature: API test
 
   Scenario: LOGIN - SUCCESSFUL by a user
     Given I login unsuccessfully with the following data
-      | Email              | Password   |
-      | eve.holt@reqres.in | cityslicka |
+      | Email        | eve.holt@reqres.in  |
+      | Password     | cityslicka          |
     Then I should get a response code of 200
 
   Scenario: LOGIN - UNSUCCESSFUL by a user
     Given I login unsuccessfully with the following data
-      | Email              | Password |
-      | eve.holt@reqres.in |          |
+      | Email        | eve.holt@reqres.in |
+      | Password     |                    |
     Then I should get a response code of 400
     And I should see the following response message:
       | "error": "Missing password" |
