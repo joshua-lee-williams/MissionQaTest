@@ -11,14 +11,13 @@ public class BasePage {
     public static WebDriver driver;
     protected WebElement baseIdentifier;
 
-    public boolean isLoaded(){
+    public void waitForPageLoad(){
         try {
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
             wait.until(ExpectedConditions.visibilityOf(baseIdentifier));
-            return true;
         } catch (Exception e) {
-            System.out.println("Page did not load.  Element not found: " + baseIdentifier);
-            return false;
+            throw new RuntimeException(this.getClass().getSimpleName() + " did not load! Element not found: "
+                    + baseIdentifier);
         }
     }
 }

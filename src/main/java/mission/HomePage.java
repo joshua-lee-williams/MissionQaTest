@@ -13,6 +13,7 @@ public class HomePage extends BasePage {
 
     public HomePage() {
         PageFactory.initElements(driver, this);
+        baseIdentifier = loginButton;
     }
 
     // Page Elements (Web Elements) - using @FindBy annotations
@@ -39,14 +40,9 @@ public class HomePage extends BasePage {
     }
 
     public void login(String username, String password) {
-        if (isLoaded()) {
-            enterUsername(username);
-            enterPassword(password);
-            clickLoginButton();
-        } else {
-            throw new RuntimeException("HomePage did not load!");
-        }
-
+        enterUsername(username);
+        enterPassword(password);
+        clickLoginButton();
     }
 
     public static void browseToHomePageByURL() {
