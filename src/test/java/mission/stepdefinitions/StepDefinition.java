@@ -44,7 +44,7 @@ public class StepDefinition {
 
     @Given("^I login with the following details$")
     public void i_login_with_the_following_details(DataTable arg1) throws Throwable {
-        System.out.println("========== LOGIN STARTING ==========");
+        logger.info("========== LOGIN STARTING ==========");
         System.err.println("ERROR STREAM TEST - THIS SHOULD SHOW IN RED");
         Map<String, String> loginData = arg1.asMap(String.class, String.class);
         String username = loginData.get("userName");
@@ -82,14 +82,14 @@ public class StepDefinition {
         shoppingCartPage.waitForPageLoad();
         List<Integer> quantities = shoppingCartPage.getAllQuantities();
 
-        System.out.println("Number of items in cart: " + quantities.size());
-        System.out.println("Quantities: " + quantities);
+        logger.info("Number of items in cart: " + quantities.size());
+        logger.info("Quantities: " + quantities);
 
         for (int i = 0; i < quantities.size(); i++) {
             Assert.assertEquals(quantities.get(i).intValue(), expectedQuantity,
                 "Item " + (i+1) + " quantity mismatch!");
         }
-        System.out.println("All items have correct quantity: " + expectedQuantity);
+        logger.info("All items have correct quantity: " + expectedQuantity);
     }
 
     @Given("^I remove the following item:$")
@@ -149,7 +149,7 @@ public class StepDefinition {
 
     @Given("^I wait for the user list to load$")
     public void i_wait_for_user_list_to_load() throws Throwable {
-        System.out.println("=== Fetching Users with Delay ===");
+        logger.info("=== Fetching Users with Delay ===");
 
         // ReqRes API has a delay parameter: /api/users?delay=3
         long startTime = System.currentTimeMillis();
@@ -265,14 +265,14 @@ public class StepDefinition {
 
     @When("^I get the list of all users within every page$")
     public void i_get_all_users_from_all_pages() {
-        System.out.println("=== Fetching all users from all pages ===");
+        logger.info("=== Fetching all users from all pages ===");
         if (allUserIds != null) {
             allUserIds.clear(); // Clear the list before populating
         }
 
         // Loop through all pages
         for (int page = 1; page <= totalPages; page++) {
-            System.out.println("Fetching page " + page + " of " + totalPages);
+            logger.info("Fetching page " + page + " of " + totalPages);
 
             response = getApiClient().get("/api/users?page=" + page);
 
@@ -287,24 +287,24 @@ public class StepDefinition {
             for (Map<String, Object> user : users) {
                 Integer userId = (Integer) user.get("id");
                 allUserIds.add(userId);
-                System.out.println("  User ID: " + userId +
+                logger.info("  User ID: " + userId +
                         ", Name: " + user.get("first_name") + " " + user.get("last_name"));
             }
         }
 
-        System.out.println("Total user IDs collected: " + allUserIds.size());
+        logger.info("Total user IDs collected: " + allUserIds.size());
     }
 
     @Then("^I should see total users count equals the number of user ids$")
     public void verify_total_users_equals_collected_ids() {
-        System.out.println("=== Verification ===");
-        System.out.println("Expected total users: " + totalUsers);
-        System.out.println("Actual user IDs collected: " + allUserIds.size());
+        logger.info("=== Verification ===");
+        logger.info("Expected total users: " + totalUsers);
+        logger.info("Actual user IDs collected: " + allUserIds.size());
 
         Assert.assertEquals(allUserIds.size(), totalUsers,
                 "Total users count does not match the number of user IDs collected!");
 
-        System.out.println("✓ Verification passed: Total users = " + totalUsers);
+        logger.info("✓ Verification passed: Total users = " + totalUsers);
     }
 
     @Given("I make a search for user {int}")
@@ -316,7 +316,7 @@ public class StepDefinition {
     @Then("I should see the following user data")
     public void IShouldSeeFollowingUserData(DataTable dt) {
         Map<String, String> expectedUserData = dt.asMap();
-        System.out.println(expectedUserData);
+        logger.info(expectedUserData.toString());
         String expectedFirstName = expectedUserData.get("first_name");
         String expectedEmail = expectedUserData.get("email");
         String actualFirstName = response.jsonPath().getString("data.first_name");
@@ -345,7 +345,7 @@ public class StepDefinition {
         response = getApiClient().post("/api/users", requestBody);
 
         // Store response for verification
-        System.out.println("User created with status: " + getApiClient().getStatusCode());
+        logger.info("User created with status: " + getApiClient().getStatusCode());
     }
 
     @Then("^response should contain the following data$")
@@ -355,7 +355,7 @@ public class StepDefinition {
         for (String field : expectedFields) {
             String fieldValue = getApiClient().getJsonPath(field);
             Assert.assertNotNull(fieldValue, "Field '" + field + "' not found in response");
-            System.out.println("✓ " + field + ": " + fieldValue);
+            logger.info("✓ " + field + ": " + fieldValue);
         }
     }
 
@@ -368,9 +368,9 @@ public class StepDefinition {
         String password = loginData.getOrDefault("Password", "");
         if (password == null) { password = "";}
 
-        System.out.println("=== Attempting Login ===");
-        System.out.println("Email: " + email);
-        System.out.println("Password: " + (password.isEmpty() ? "(empty)" : password));
+        logger.info("=== Attempting Login ===");
+        logger.info("Email: " + email);
+        logger.info("Password: " + (password.isEmpty() ? "(empty)" : password));
 
         // Build request body
         String requestBody = "{"

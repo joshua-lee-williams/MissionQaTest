@@ -41,7 +41,7 @@ public class HomePage extends BasePage {
         clickLoginButton();
     }
 
-    public static void browseToHomePageByURL() {
+    public void browseToHomePageByURL() {
         driver.get(LoadProp.getProperty("url"));
     }
 }
