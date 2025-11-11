@@ -8,13 +8,12 @@ import io.restassured.response.Response;
 import mission.api.ApiClient;
 import mission.pages.*;
 import org.testng.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j2;
 
 import java.util.*;
 
+@Log4j2
 public class StepDefinition {
-    private static final Logger logger = LoggerFactory.getLogger(StepDefinition.class);
 
     HomePage homePage = new HomePage();
     InventoryPage inventoryPage = new InventoryPage();
@@ -44,7 +43,7 @@ public class StepDefinition {
 
     @Given("^I login with the following details$")
     public void i_login_with_the_following_details(DataTable arg1) throws Throwable {
-        logger.info("========== LOGIN STARTING ==========");
+        log.info("========== LOGIN STARTING ==========");
         System.err.println("ERROR STREAM TEST - THIS SHOULD SHOW IN RED");
         Map<String, String> loginData = arg1.asMap(String.class, String.class);
         String username = loginData.get("userName");
@@ -59,9 +58,9 @@ public class StepDefinition {
         inventoryPage.waitForPageLoad();
         List<String> itemList = arg1.asList(String.class);
         for(String item : itemList) {
-            logger.info("Attempting to add: " + item);
+            log.info("Attempting to add: " + item);
             inventoryPage.addItemToBasket(item);
-            logger.info("Successfully added: " + item);
+            log.info("Successfully added: " + item);
         }
     }
 
@@ -82,14 +81,14 @@ public class StepDefinition {
         shoppingCartPage.waitForPageLoad();
         List<Integer> quantities = shoppingCartPage.getAllQuantities();
 
-        logger.info("Number of items in cart: " + quantities.size());
-        logger.info("Quantities: " + quantities);
+        log.info("Number of items in cart: " + quantities.size());
+        log.info("Quantities: " + quantities);
 
         for (int i = 0; i < quantities.size(); i++) {
             Assert.assertEquals(quantities.get(i).intValue(), expectedQuantity,
                 "Item " + (i+1) + " quantity mismatch!");
         }
-        logger.info("All items have correct quantity: " + expectedQuantity);
+        log.info("All items have correct quantity: " + expectedQuantity);
     }
 
     @Given("^I remove the following item:$")
@@ -149,7 +148,7 @@ public class StepDefinition {
 
     @Given("^I wait for the user list to load$")
     public void i_wait_for_user_list_to_load() throws Throwable {
-        logger.info("=== Fetching Users with Delay ===");
+        log.info("=== Fetching Users with Delay ===");
 
         // ReqRes API has a delay parameter: /api/users?delay=3
         long startTime = System.currentTimeMillis();
@@ -157,18 +156,18 @@ public class StepDefinition {
         long endTime = System.currentTimeMillis();
 
         long responseTime = endTime - startTime;
-        logger.info("Response received after: " + responseTime + " ms");
+        log.info("Response received after: " + responseTime + " ms");
 
         // Verify we got a successful response
         Assert.assertEquals(getApiClient().getStatusCode(), 200,
                 "Failed to load user list");
 
-        logger.info("User list loaded successfully with delay");
+        log.info("User list loaded successfully with delay");
     }
 
     @Then("^I should see that every user has a unique id$")
     public void i_should_see_unique_user_ids() throws Throwable {
-        logger.info("=== Verifying Unique User IDs ===");
+        log.info("=== Verifying Unique User IDs ===");
 
         // Get all users from the response
         List<Map<String, Object>> users = response.jsonPath().getList("data");
@@ -178,21 +177,21 @@ public class StepDefinition {
         for (Map<String, Object> user : users) {
             Integer userId = (Integer) user.get("id");
             userIds.add(userId);
-            logger.info("User ID: " + userId +
+            log.info("User ID: " + userId +
                     ", Name: " + user.get("first_name") + " " + user.get("last_name"));
         }
 
         // Check for duplicates using a Set
         Set<Integer> uniqueIds = new HashSet<>(userIds);
 
-        logger.info("Total users: " + userIds.size());
-        logger.info("Unique IDs: " + uniqueIds.size());
+        log.info("Total users: " + userIds.size());
+        log.info("Unique IDs: " + uniqueIds.size());
 
         // Verify all IDs are unique
         Assert.assertEquals(userIds.size(), uniqueIds.size(),
                 "Duplicate user IDs found! Some users have the same ID.");
 
-        logger.info("All user IDs are unique");
+        log.info("All user IDs are unique");
     }
 
     @Then("^I should get a response code of (\\d+)$")
@@ -204,8 +203,8 @@ public class StepDefinition {
     public void i_should_see_response_message(DataTable dataTable) throws Throwable {
         String expectedPattern = dataTable.asList(String.class).get(0);
 
-        logger.info("=== Verifying Response Message ===");
-        logger.info("Expected pattern: " + expectedPattern);
+        log.info("=== Verifying Response Message ===");
+        log.info("Expected pattern: " + expectedPattern);
 
         // Parse the field name and expected value
         // Input: "error": "Missing password"
@@ -241,12 +240,12 @@ public class StepDefinition {
                 "Field '" + fieldName + "' does not match! " +
                         "Expected: '" + expectedValue + "', but got: '" + actualValue + "'");
 
-        logger.info("✓ Field '" + fieldName + "' matches expected value: " + expectedValue);
+        log.info("✓ Field '" + fieldName + "' matches expected value: " + expectedValue);
     }
 
     @Given("^I get the default list of users for on 1st page$")
     public void i_get_first_page_users() {
-        logger.info("=== Getting first page of users ===");
+        log.info("=== Getting first page of users ===");
 
         // Get page 1
         response = getApiClient().get("/api/users?page=1");
@@ -255,8 +254,8 @@ public class StepDefinition {
         totalUsers = getApiClient().getJsonPathInt("total");
         totalPages = getApiClient().getJsonPathInt("total_pages");
 
-        logger.info("Total users: " + totalUsers);
-        logger.info("Total pages: " + totalPages);
+        log.info("Total users: " + totalUsers);
+        log.info("Total pages: " + totalPages);
 
         // Verify we got a successful response
         Assert.assertEquals(getApiClient().getStatusCode(), 200,
@@ -265,14 +264,14 @@ public class StepDefinition {
 
     @When("^I get the list of all users within every page$")
     public void i_get_all_users_from_all_pages() {
-        logger.info("=== Fetching all users from all pages ===");
+        log.info("=== Fetching all users from all pages ===");
         if (allUserIds != null) {
             allUserIds.clear(); // Clear the list before populating
         }
 
         // Loop through all pages
         for (int page = 1; page <= totalPages; page++) {
-            logger.info("Fetching page " + page + " of " + totalPages);
+            log.info("Fetching page " + page + " of " + totalPages);
 
             response = getApiClient().get("/api/users?page=" + page);
 
@@ -287,36 +286,36 @@ public class StepDefinition {
             for (Map<String, Object> user : users) {
                 Integer userId = (Integer) user.get("id");
                 allUserIds.add(userId);
-                logger.info("  User ID: " + userId +
+                log.info("  User ID: " + userId +
                         ", Name: " + user.get("first_name") + " " + user.get("last_name"));
             }
         }
 
-        logger.info("Total user IDs collected: " + allUserIds.size());
+        log.info("Total user IDs collected: " + allUserIds.size());
     }
 
     @Then("^I should see total users count equals the number of user ids$")
     public void verify_total_users_equals_collected_ids() {
-        logger.info("=== Verification ===");
-        logger.info("Expected total users: " + totalUsers);
-        logger.info("Actual user IDs collected: " + allUserIds.size());
+        log.info("=== Verification ===");
+        log.info("Expected total users: " + totalUsers);
+        log.info("Actual user IDs collected: " + allUserIds.size());
 
         Assert.assertEquals(allUserIds.size(), totalUsers,
                 "Total users count does not match the number of user IDs collected!");
 
-        logger.info("✓ Verification passed: Total users = " + totalUsers);
+        log.info("✓ Verification passed: Total users = " + totalUsers);
     }
 
     @Given("I make a search for user {int}")
     public void iMakeASearchForUser(int userIDToSearch) {
-        logger.info("Making a search for userID: " + userIDToSearch);
+        log.info("Making a search for userID: " + userIDToSearch);
         response = getApiClient().get("/api/users/" + userIDToSearch);
     }
 
     @Then("I should see the following user data")
     public void IShouldSeeFollowingUserData(DataTable dt) {
         Map<String, String> expectedUserData = dt.asMap();
-        logger.info(expectedUserData.toString());
+        log.info(expectedUserData.toString());
         String expectedFirstName = expectedUserData.get("first_name");
         String expectedEmail = expectedUserData.get("email");
         String actualFirstName = response.jsonPath().getString("data.first_name");
@@ -334,9 +333,9 @@ public class StepDefinition {
 
     @Given("^I create a user with following (.+) (.+)$")
     public void i_create_user_with_name_and_job(String name, String job) throws Throwable {
-        logger.info("=== Creating User ===");
-        logger.info("Name: " + name);
-        logger.info("Job: " + job);
+        log.info("=== Creating User ===");
+        log.info("Name: " + name);
+        log.info("Job: " + job);
 
         // Build JSON request body
         String requestBody = String.format("{\"name\": \"%s\", \"job\": \"%s\"}", name, job);
@@ -345,7 +344,7 @@ public class StepDefinition {
         response = getApiClient().post("/api/users", requestBody);
 
         // Store response for verification
-        logger.info("User created with status: " + getApiClient().getStatusCode());
+        log.info("User created with status: " + getApiClient().getStatusCode());
     }
 
     @Then("^response should contain the following data$")
@@ -355,7 +354,7 @@ public class StepDefinition {
         for (String field : expectedFields) {
             String fieldValue = getApiClient().getJsonPath(field);
             Assert.assertNotNull(fieldValue, "Field '" + field + "' not found in response");
-            logger.info("✓ " + field + ": " + fieldValue);
+            log.info("✓ " + field + ": " + fieldValue);
         }
     }
 
@@ -368,9 +367,9 @@ public class StepDefinition {
         String password = loginData.getOrDefault("Password", "");
         if (password == null) { password = "";}
 
-        logger.info("=== Attempting Login ===");
-        logger.info("Email: " + email);
-        logger.info("Password: " + (password.isEmpty() ? "(empty)" : password));
+        log.info("=== Attempting Login ===");
+        log.info("Email: " + email);
+        log.info("Password: " + (password.isEmpty() ? "(empty)" : password));
 
         // Build request body
         String requestBody = "{"
