@@ -87,13 +87,6 @@ public class ApiClient {
     }
 
     /**
-     * Get response body as string
-     */
-    public String getResponseBody() {
-        return response.getBody().asString();
-    }
-
-    /**
      * Extract value from JSON response using JSON path
      */
     public String getJsonPath(String jsonPath) {
@@ -106,28 +99,5 @@ public class ApiClient {
     public int getJsonPathInt(String jsonPath) {
         return response.jsonPath().getInt(jsonPath);
     }
-
-    /**
-     * Verify status code
-     */
-    public boolean verifyStatusCode(int expectedStatusCode) {
-        int actualStatusCode = getStatusCode();
-        log.info("Expected Status Code: " + expectedStatusCode);
-        log.info("Actual Status Code: " + actualStatusCode);
-        return actualStatusCode == expectedStatusCode;
-    }
-
-    /**
-     * Get list as an array from JSON response
-     */
-    public List<Object> getJsonPathList(String jsonPath) {
-        return response.jsonPath().getList(jsonPath);
-    }
-
-    /**
-     * Get object from JSON response
-     */
-    public <T> T getJsonPathObject(String jsonPath, Class<T> type) {
-        return response.jsonPath().getObject(jsonPath, type);
-    }
+    
 }
