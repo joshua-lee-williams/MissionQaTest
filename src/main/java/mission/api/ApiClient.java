@@ -3,11 +3,12 @@ package mission.api;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import lombok.extern.log4j.Log4j2;
 import mission.utils.LoadProp;
 
 import java.util.List;
-import java.util.Map;
 
+@Log4j2
 public class ApiClient {
 
     private String baseUrl;
@@ -42,31 +43,13 @@ public class ApiClient {
      * GET request
      */
     public Response get(String endpoint) {
-        System.out.println("=== GET Request ===");
-        System.out.println("URL: " + baseUrl + endpoint);
+        log.info("=== GET Request ===");
+        log.info("URL: " + baseUrl + endpoint);
 
         response = initializeRequest().get(endpoint);
 
-        System.out.println("Status Code: " + response.getStatusCode());
-        System.out.println("Response Body: " + response.getBody().asString());
-
-        return response;
-    }
-
-    /**
-     * GET request with query parameters
-     */
-    public Response get(String endpoint, Map<String, Object> queryParams) {
-        System.out.println("=== GET Request with Query Params ===");
-        System.out.println("URL: " + baseUrl + endpoint);
-        System.out.println("Query Params: " + queryParams);
-
-        response = initializeRequest()
-                .queryParams(queryParams)
-                .get(endpoint);
-
-        System.out.println("Status Code: " + response.getStatusCode());
-        System.out.println("Response Body: " + response.getBody().asString());
+        log.info("Status Code: " + response.getStatusCode());
+        log.info("Response Body: " + response.getBody().asString());
 
         return response;
     }
@@ -75,123 +58,18 @@ public class ApiClient {
      * POST request with body
      */
     public Response post(String endpoint, String requestBody) {
-        System.out.println("=== POST Request ===");
-        System.out.println("URL: " + baseUrl + endpoint);
-        System.out.println("Request Body: " + requestBody);
+        log.info("=== POST Request ===");
+        log.info("URL: " + baseUrl + endpoint);
+        log.info("Request Body: " + requestBody);
 
         response = initializeRequest()
                 .body(requestBody)
                 .post(endpoint);
 
-        System.out.println("Status Code: " + response.getStatusCode());
-        System.out.println("Response Body: " + response.getBody().asString());
+        log.info("Status Code: " + response.getStatusCode());
+        log.info("Response Body: " + response.getBody().asString());
 
         return response;
-    }
-
-    /**
-     * POST request with object (automatically converted to JSON)
-     */
-    public Response post(String endpoint, Object requestBody) {
-        System.out.println("=== POST Request ===");
-        System.out.println("URL: " + baseUrl + endpoint);
-
-        response = initializeRequest()
-                .body(requestBody)
-                .post(endpoint);
-
-        System.out.println("Status Code: " + response.getStatusCode());
-        System.out.println("Response Body: " + response.getBody().asString());
-
-        return response;
-    }
-
-    /**
-     * PUT request
-     */
-    public Response put(String endpoint, String requestBody) {
-        System.out.println("=== PUT Request ===");
-        System.out.println("URL: " + baseUrl + endpoint);
-        System.out.println("Request Body: " + requestBody);
-
-        response = initializeRequest()
-                .body(requestBody)
-                .put(endpoint);
-
-        System.out.println("Status Code: " + response.getStatusCode());
-        System.out.println("Response Body: " + response.getBody().asString());
-
-        return response;
-    }
-
-    /**
-     * PUT request with object
-     */
-    public Response put(String endpoint, Object requestBody) {
-        System.out.println("=== PUT Request ===");
-        System.out.println("URL: " + baseUrl + endpoint);
-
-        response = initializeRequest()
-                .body(requestBody)
-                .put(endpoint);
-
-        System.out.println("Status Code: " + response.getStatusCode());
-        System.out.println("Response Body: " + response.getBody().asString());
-
-        return response;
-    }
-
-    /**
-     * PATCH request
-     */
-    public Response patch(String endpoint, String requestBody) {
-        System.out.println("=== PATCH Request ===");
-        System.out.println("URL: " + baseUrl + endpoint);
-        System.out.println("Request Body: " + requestBody);
-
-        response = initializeRequest()
-                .body(requestBody)
-                .patch(endpoint);
-
-        System.out.println("Status Code: " + response.getStatusCode());
-        System.out.println("Response Body: " + response.getBody().asString());
-
-        return response;
-    }
-
-    /**
-     * DELETE request
-     */
-    public Response delete(String endpoint) {
-        System.out.println("=== DELETE Request ===");
-        System.out.println("URL: " + baseUrl + endpoint);
-
-        response = initializeRequest().delete(endpoint);
-
-        System.out.println("Status Code: " + response.getStatusCode());
-        System.out.println("Response Body: " + response.getBody().asString());
-
-        return response;
-    }
-
-    /**
-     * Add custom header to the request
-     */
-    public ApiClient addHeader(String key, String value) {
-        if (request != null) {
-            request.header(key, value);
-        }
-        return this;
-    }
-
-    /**
-     * Add multiple custom headers
-     */
-    public ApiClient addHeaders(Map<String, String> headers) {
-        if (request != null) {
-            request.headers(headers);
-        }
-        return this;
     }
 
     /**
@@ -234,8 +112,8 @@ public class ApiClient {
      */
     public boolean verifyStatusCode(int expectedStatusCode) {
         int actualStatusCode = getStatusCode();
-        System.out.println("Expected Status Code: " + expectedStatusCode);
-        System.out.println("Actual Status Code: " + actualStatusCode);
+        log.info("Expected Status Code: " + expectedStatusCode);
+        log.info("Actual Status Code: " + actualStatusCode);
         return actualStatusCode == expectedStatusCode;
     }
 

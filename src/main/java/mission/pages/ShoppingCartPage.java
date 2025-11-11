@@ -1,9 +1,9 @@
 package mission.pages;
 
+import lombok.extern.log4j.Log4j2;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
-import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -11,10 +11,10 @@ import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Log4j2
 public class ShoppingCartPage extends BasePage {
 
     public ShoppingCartPage() {
-        PageFactory.initElements(driver, this);
         this.baseIdentifier = cartList;
     }
 
@@ -59,7 +59,7 @@ public class ShoppingCartPage extends BasePage {
 
         removeFromCartButton.click();
 
-        System.out.println("Removed from basket: " + itemName);
+        log.info("Removed from basket: " + itemName);
     }
 
     public void clickCheckoutButton() {

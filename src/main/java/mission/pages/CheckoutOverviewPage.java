@@ -1,11 +1,12 @@
 package mission.pages;
 
+import lombok.extern.log4j.Log4j2;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
-import org.openqa.selenium.support.PageFactory;
 
 import java.util.List;
 
+@Log4j2
 public class CheckoutOverviewPage extends BasePage {
 
     @FindBy(className = "inventory_item_price")
@@ -24,7 +25,6 @@ public class CheckoutOverviewPage extends BasePage {
     private WebElement summaryInfo;
 
     public CheckoutOverviewPage() {
-        PageFactory.initElements(driver, this);
         this.baseIdentifier = summaryInfo;
     }
 
@@ -42,14 +42,14 @@ public class CheckoutOverviewPage extends BasePage {
      */
     public double calculateItemsTotal() {
         double total = 0.0;
-        System.out.println("=== Calculating Items Total ===");
+        log.info("=== Calculating Items Total ===");
         for (WebElement priceElement : itemPrices) {
             String priceText = priceElement.getText();
             double price = extractPrice(priceText);
-            System.out.println("Item price: $" + price);
+            log.info("Item price: ${}", price);
             total += price;
         }
-        System.out.println("Calculated total: $" + total);
+        log.info("Calculated total: ${}", total);
         return total;
     }
 
@@ -59,7 +59,7 @@ public class CheckoutOverviewPage extends BasePage {
     public double getSubtotal() {
         String subtotalText = subtotalLabel.getText(); // "Item total: $79.96"
         double subtotal = extractPrice(subtotalText);
-        System.out.println("Displayed subtotal: " + subtotalText + " = $" + subtotal);
+        log.info("Displayed subtotal: {} = actual subtotal: {}", subtotalText, subtotal);
         return subtotal;
     }
 
@@ -69,7 +69,7 @@ public class CheckoutOverviewPage extends BasePage {
     public double getTax() {
         String taxText = taxLabel.getText(); // "Tax: $6.40"
         double tax = extractPrice(taxText);
-        System.out.println("Displayed tax: " + taxText + " = $" + tax);
+        log.info("Displayed tax: " + taxText + " = $" + tax);
         return tax;
     }
 
@@ -79,7 +79,7 @@ public class CheckoutOverviewPage extends BasePage {
     public double getTotal() {
         String totalText = totalLabel.getText(); // "Total: $86.36"
         double total = extractPrice(totalText);
-        System.out.println("Displayed total: " + totalText + " = $" + total);
+        log.info("Displayed total: " + totalText + " = $" + total);
         return total;
     }
 
@@ -91,7 +91,7 @@ public class CheckoutOverviewPage extends BasePage {
         double displayedSubtotal = getSubtotal();
 
         boolean matches = Math.abs(calculatedTotal - displayedSubtotal) < 0.01;
-        System.out.println("Subtotal match: " + matches);
+        log.info("Subtotal match: " + matches);
         return matches;
     }
 
@@ -104,14 +104,14 @@ public class CheckoutOverviewPage extends BasePage {
         double calculatedTotal = subtotal + tax;
         double displayedTotal = getTotal();
 
-        System.out.println("=== Verifying Total ===");
-        System.out.println("Subtotal: $" + subtotal);
-        System.out.println("Tax: $" + tax);
-        System.out.println("Calculated (subtotal + tax): $" + String.format("%.2f", calculatedTotal));
-        System.out.println("Displayed total: $" + displayedTotal);
+        log.info("=== Verifying Total ===");
+        log.info("Subtotal: ${}", subtotal);
+        log.info("Tax: ${}", tax);
+        log.info("Calculated (subtotal + tax): ${}", String.format("%.2f", calculatedTotal));
+        log.info("Displayed total: ${}", displayedTotal);
 
         boolean matches = Math.abs(calculatedTotal - displayedTotal) < 0.01;
-        System.out.println("Total match: " + matches);
+        log.info("Total match: {}", matches);
         return matches;
     }
 
@@ -123,12 +123,12 @@ public class CheckoutOverviewPage extends BasePage {
         double tax = getTax();
         double calculatedTax = subtotal * (expectedTaxRate / 100.0);
 
-        System.out.println("=== Verifying Tax Rate ===");
-        System.out.println("Expected tax (" + expectedTaxRate + "%): $" + String.format("%.2f", calculatedTax));
-        System.out.println("Actual tax: $" + tax);
+        log.info("=== Verifying Tax Rate ===");
+        log.info("Expected tax ({}%): ${}", expectedTaxRate, String.format("%.2f", calculatedTax));
+        log.info("Actual tax: ${}", tax);
 
         boolean matches = Math.abs(calculatedTax - tax) < 0.01;
-        System.out.println("Tax rate match: " + matches);
+        log.info("Tax rate match: {}", matches);
         return matches;
     }
 }
