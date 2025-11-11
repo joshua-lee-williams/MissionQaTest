@@ -42,7 +42,7 @@ public class StepDefinition {
     }
 
     @Given("^I login with the following details$")
-    public void i_login_with_the_following_details(DataTable arg1) throws Throwable {
+    public void i_login_with_the_following_details(DataTable arg1)  {
         log.info("========== LOGIN STARTING ==========");
         System.err.println("ERROR STREAM TEST - THIS SHOULD SHOW IN RED");
         Map<String, String> loginData = arg1.asMap(String.class, String.class);
@@ -54,7 +54,7 @@ public class StepDefinition {
     }
 
     @Given("^I add the following items to the basket$")
-    public void i_add_the_following_items_to_the_basket(DataTable arg1) throws Throwable {
+    public void i_add_the_following_items_to_the_basket(DataTable arg1)  {
         inventoryPage.waitForPageLoad();
         List<String> itemList = arg1.asList(String.class);
         for(String item : itemList) {
@@ -65,19 +65,19 @@ public class StepDefinition {
     }
 
     @Given("^I should see (\\d+) items added to the shopping cart$")
-    public void i_should_see_items_added_to_the_shopping_cart(int expectedNumberOfItems) throws Throwable {
+    public void i_should_see_items_added_to_the_shopping_cart(int expectedNumberOfItems)  {
         int actualNumberOfItemsInShoppingCart = inventoryPage.getNumberOfItemsInShoppingCart();
         Assert.assertEquals(actualNumberOfItemsInShoppingCart, expectedNumberOfItems);
     }
 
     @Given("^I click on the shopping cart$")
-    public void i_click_on_the_shopping_cart() throws Throwable {
+    public void i_click_on_the_shopping_cart()  {
         inventoryPage.waitForPageLoad();
         inventoryPage.clickShoppingCartBadge();
     }
 
     @Given("^I verify that the QTY count for each item should be (\\d+)$")
-    public void i_verify_that_the_QTY_count_for_each_item_should_be(int expectedQuantity) throws Throwable {
+    public void i_verify_that_the_QTY_count_for_each_item_should_be(int expectedQuantity)  {
         shoppingCartPage.waitForPageLoad();
         List<Integer> quantities = shoppingCartPage.getAllQuantities();
 
@@ -92,7 +92,7 @@ public class StepDefinition {
     }
 
     @Given("^I remove the following item:$")
-    public void i_remove_the_following_item(DataTable itemsToRemove) throws Throwable {
+    public void i_remove_the_following_item(DataTable itemsToRemove)  {
         List<String> itemsToRemoveList = itemsToRemove.asList();
         for(String item:itemsToRemoveList) {
             shoppingCartPage.removeItemFromBasket(item);
@@ -100,43 +100,43 @@ public class StepDefinition {
     }
 
     @Given("^I click on the CHECKOUT button$")
-    public void i_click_on_the_CHECKOUT_button() throws Throwable {
+    public void i_click_on_the_CHECKOUT_button()  {
         shoppingCartPage.waitForPageLoad();
         shoppingCartPage.clickCheckoutButton();
     }
 
     @Given("^I type \"([^\"]*)\" for First Name$")
-    public void i_type_for_First_Name(String firstName) throws Throwable {
+    public void i_type_for_First_Name(String firstName)  {
         checkoutPage.waitForPageLoad();
         checkoutPage.enterFirstName(firstName);
     }
 
     @Given("^I type \"([^\"]*)\" for Last Name$")
-    public void i_type_for_Last_Name(String lastName) throws Throwable {
+    public void i_type_for_Last_Name(String lastName)  {
         checkoutPage.waitForPageLoad();
         checkoutPage.enterLastName(lastName);
     }
 
     @Given("^I type \"([^\"]*)\" for ZIP/Postal Code$")
-    public void i_type_for_ZIP_Postal_Code(String zipcode) throws Throwable {
+    public void i_type_for_ZIP_Postal_Code(String zipcode)  {
         checkoutPage.waitForPageLoad();
         checkoutPage.enterZipcode(zipcode);
     }
 
     @When("^I click on the CONTINUE button$")
-    public void i_click_on_the_CONTINUE_button() throws Throwable {
+    public void i_click_on_the_CONTINUE_button()  {
         checkoutPage.waitForPageLoad();
         checkoutPage.clickContinueButton();
     }
 
     @Then("^Item total will be equal to the total of items on the list$")
-    public void item_total_will_be_equal_to_the_total_of_items_on_the_list() throws Throwable {
+    public void item_total_will_be_equal_to_the_total_of_items_on_the_list()  {
         checkoutOverviewPage.waitForPageLoad();
         Assert.assertTrue(checkoutOverviewPage.verifySubtotalIsCorrect());
     }
 
     @Then("^a Tax rate of (\\d+) % is applied to the total$")
-    public void a_Tax_rate_of_is_applied_to_the_total(double taxRate) throws Throwable {
+    public void a_Tax_rate_of_is_applied_to_the_total(double taxRate)  {
         checkoutOverviewPage.waitForPageLoad();
         double expectedTaxAmount = checkoutOverviewPage.getSubtotal() * taxRate / 100;
         double actualTaxAmount = checkoutOverviewPage.getTax();
@@ -147,7 +147,7 @@ public class StepDefinition {
     // API Step definitions
 
     @Given("^I wait for the user list to load$")
-    public void i_wait_for_user_list_to_load() throws Throwable {
+    public void i_wait_for_user_list_to_load()  {
         log.info("=== Fetching Users with Delay ===");
 
         // ReqRes API has a delay parameter: /api/users?delay=3
@@ -166,7 +166,7 @@ public class StepDefinition {
     }
 
     @Then("^I should see that every user has a unique id$")
-    public void i_should_see_unique_user_ids() throws Throwable {
+    public void i_should_see_unique_user_ids()  {
         log.info("=== Verifying Unique User IDs ===");
 
         // Get all users from the response
@@ -200,7 +200,7 @@ public class StepDefinition {
     }
 
     @Then("^I should see the following response message:$")
-    public void i_should_see_response_message(DataTable dataTable) throws Throwable {
+    public void i_should_see_response_message(DataTable dataTable)  {
         String expectedPattern = dataTable.asList(String.class).get(0);
 
         log.info("=== Verifying Response Message ===");
@@ -332,10 +332,10 @@ public class StepDefinition {
     }
 
     @Given("^I create a user with following (.+) (.+)$")
-    public void i_create_user_with_name_and_job(String name, String job) throws Throwable {
+    public void i_create_user_with_name_and_job(String name, String job)  {
         log.info("=== Creating User ===");
-        log.info("Name: " + name);
-        log.info("Job: " + job);
+        log.info("Name: {}", name);
+        log.info("Job: {}", job);
 
         // Build JSON request body
         String requestBody = String.format("{\"name\": \"%s\", \"job\": \"%s\"}", name, job);
@@ -344,22 +344,22 @@ public class StepDefinition {
         response = getApiClient().post("/api/users", requestBody);
 
         // Store response for verification
-        log.info("User created with status: " + getApiClient().getStatusCode());
+        log.info("User created with status: {}", getApiClient().getStatusCode());
     }
 
     @Then("^response should contain the following data$")
-    public void response_should_contain_data(DataTable dataTable) throws Throwable {
+    public void response_should_contain_data(DataTable dataTable)  {
         List<String> expectedFields = dataTable.asList(String.class);
 
         for (String field : expectedFields) {
             String fieldValue = getApiClient().getJsonPath(field);
             Assert.assertNotNull(fieldValue, "Field '" + field + "' not found in response");
-            log.info("✓ " + field + ": " + fieldValue);
+            log.info("✓ {}: {}",  field, fieldValue);
         }
     }
 
     @Given("^I login unsuccessfully with the following data$")
-    public void i_login_unsuccessfully(DataTable dataTable) throws Throwable {
+    public void i_login_unsuccessfully(DataTable dataTable)  {
         // Convert DataTable to Map
         Map<String, String> loginData = dataTable.asMap(String.class, String.class);
 
@@ -368,8 +368,8 @@ public class StepDefinition {
         if (password == null) { password = "";}
 
         log.info("=== Attempting Login ===");
-        log.info("Email: " + email);
-        log.info("Password: " + (password.isEmpty() ? "(empty)" : password));
+        log.info("Email: {}", email);
+        log.info("Password: {}", (password.isEmpty() ? "(empty)" : password));
 
         // Build request body
         String requestBody = "{"

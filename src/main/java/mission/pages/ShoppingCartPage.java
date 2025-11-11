@@ -33,8 +33,6 @@ public class ShoppingCartPage extends BasePage {
     @FindBy(id = "checkout")
     private WebElement checkoutButton;
 
-
-
     /**
      * Get the number of items in the cart
      */
@@ -59,7 +57,7 @@ public class ShoppingCartPage extends BasePage {
 
         removeFromCartButton.click();
 
-        log.info("Removed from basket: " + itemName);
+        log.info("Removed from basket: {}", itemName);
     }
 
     public void clickCheckoutButton() {
