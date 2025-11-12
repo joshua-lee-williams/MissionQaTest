@@ -31,7 +31,6 @@ public class InventoryPage extends BasePage {
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         WebElement addToCartButton = wait.until(ExpectedConditions.elementToBeClickable(By.id(buttonId)));
-
         addToCartButton.click();
 
         log.info("Added to basket: {}", itemName);

@@ -1,16 +1,28 @@
 package mission.stepdefinitions;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.When;
 import io.cucumber.java.en.Then;
 import io.cucumber.datatable.DataTable;
 import io.restassured.response.Response;
 import mission.api.ApiClient;
-import mission.pages.*;
+import mission.pages.CheckoutOverviewPage;
+import mission.pages.CheckoutPage;
+import mission.pages.HomePage;
+import mission.pages.InventoryPage;
+import mission.pages.ShoppingCartPage;
+import mission.utils.ResponseValidator;
+import mission.workflows.LoginWorkflow;
+import mission.workflows.ShoppingWorkflow;
 import org.testng.Assert;
 import lombok.extern.log4j.Log4j2;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Log4j2
 public class StepDefinition {
@@ -20,6 +32,8 @@ public class StepDefinition {
     ShoppingCartPage shoppingCartPage = new ShoppingCartPage();
     CheckoutPage checkoutPage = new CheckoutPage();
     CheckoutOverviewPage checkoutOverviewPage = new CheckoutOverviewPage();
+    LoginWorkflow loginWorkflow = new LoginWorkflow();
+    ShoppingWorkflow shoppingWorkflow = new ShoppingWorkflow();
     private ApiClient apiClient;
     private Response response;
     private int totalUsers;
@@ -34,61 +48,39 @@ public class StepDefinition {
     }
 
     // UI Step Definitions
-
     @Given("^I am on the home page$")
-    public void iAmOnTheHomePage() {
+    public void i_am_on_the_home_page() {
         homePage.browseToHomePageByURL();
-        homePage.waitForPageLoad();
     }
 
     @Given("^I login with the following details$")
     public void i_login_with_the_following_details(DataTable arg1)  {
-        log.info("========== LOGIN STARTING ==========");
-        System.err.println("ERROR STREAM TEST - THIS SHOULD SHOW IN RED");
         Map<String, String> loginData = arg1.asMap(String.class, String.class);
-        String username = loginData.get("userName");
-        String password = loginData.get("Password");
-        homePage.enterUsername(username);
-        homePage.enterPassword(password);
-        homePage.clickLoginButton();
+        loginWorkflow.login(loginData.get("userName"), loginData.get("Password"));
     }
 
     @Given("^I add the following items to the basket$")
     public void i_add_the_following_items_to_the_basket(DataTable arg1)  {
-        inventoryPage.waitForPageLoad();
         List<String> itemList = arg1.asList(String.class);
-        for(String item : itemList) {
-            log.info("Attempting to add: " + item);
-            inventoryPage.addItemToBasket(item);
-            log.info("Successfully added: " + item);
-        }
+        shoppingWorkflow.addItemsToBasket(itemList);
     }
 
     @Given("^I should see (\\d+) items added to the shopping cart$")
     public void i_should_see_items_added_to_the_shopping_cart(int expectedNumberOfItems)  {
         int actualNumberOfItemsInShoppingCart = inventoryPage.getNumberOfItemsInShoppingCart();
-        Assert.assertEquals(actualNumberOfItemsInShoppingCart, expectedNumberOfItems);
+        Assert.assertEquals(actualNumberOfItemsInShoppingCart, expectedNumberOfItems, "Actual number of items in shopping cart does " +
+                "not match expected number of items.");
     }
 
     @Given("^I click on the shopping cart$")
     public void i_click_on_the_shopping_cart()  {
-        inventoryPage.waitForPageLoad();
         inventoryPage.clickShoppingCartBadge();
     }
 
     @Given("^I verify that the QTY count for each item should be (\\d+)$")
     public void i_verify_that_the_QTY_count_for_each_item_should_be(int expectedQuantity)  {
-        shoppingCartPage.waitForPageLoad();
         List<Integer> quantities = shoppingCartPage.getAllQuantities();
-
-        log.info("Number of items in cart: " + quantities.size());
-        log.info("Quantities: " + quantities);
-
-        for (int i = 0; i < quantities.size(); i++) {
-            Assert.assertEquals(quantities.get(i).intValue(), expectedQuantity,
-                "Item " + (i+1) + " quantity mismatch!");
-        }
-        log.info("All items have correct quantity: " + expectedQuantity);
+        shoppingWorkflow.validateShoppingCartQuantitiesMatchExpected(quantities, expectedQuantity);
     }
 
     @Given("^I remove the following item:$")
@@ -101,43 +93,36 @@ public class StepDefinition {
 
     @Given("^I click on the CHECKOUT button$")
     public void i_click_on_the_CHECKOUT_button()  {
-        shoppingCartPage.waitForPageLoad();
         shoppingCartPage.clickCheckoutButton();
     }
 
     @Given("^I type \"([^\"]*)\" for First Name$")
     public void i_type_for_First_Name(String firstName)  {
-        checkoutPage.waitForPageLoad();
         checkoutPage.enterFirstName(firstName);
     }
 
     @Given("^I type \"([^\"]*)\" for Last Name$")
     public void i_type_for_Last_Name(String lastName)  {
-        checkoutPage.waitForPageLoad();
         checkoutPage.enterLastName(lastName);
     }
 
     @Given("^I type \"([^\"]*)\" for ZIP/Postal Code$")
     public void i_type_for_ZIP_Postal_Code(String zipcode)  {
-        checkoutPage.waitForPageLoad();
         checkoutPage.enterZipcode(zipcode);
     }
 
     @When("^I click on the CONTINUE button$")
     public void i_click_on_the_CONTINUE_button()  {
-        checkoutPage.waitForPageLoad();
         checkoutPage.clickContinueButton();
     }
 
     @Then("^Item total will be equal to the total of items on the list$")
     public void item_total_will_be_equal_to_the_total_of_items_on_the_list()  {
-        checkoutOverviewPage.waitForPageLoad();
         Assert.assertTrue(checkoutOverviewPage.verifySubtotalIsCorrect());
     }
 
     @Then("^a Tax rate of (\\d+) % is applied to the total$")
     public void a_Tax_rate_of_is_applied_to_the_total(double taxRate)  {
-        checkoutOverviewPage.waitForPageLoad();
         double expectedTaxAmount = checkoutOverviewPage.getSubtotal() * taxRate / 100;
         double actualTaxAmount = checkoutOverviewPage.getTax();
         Assert.assertTrue(Math.abs(expectedTaxAmount - actualTaxAmount) < 0.01,
@@ -200,47 +185,9 @@ public class StepDefinition {
     }
 
     @Then("^I should see the following response message:$")
-    public void i_should_see_response_message(DataTable dataTable)  {
+    public void i_should_see_response_message(DataTable dataTable) throws JsonProcessingException {
         String expectedPattern = dataTable.asList(String.class).get(0);
-
-        log.info("=== Verifying Response Message ===");
-        log.info("Expected pattern: " + expectedPattern);
-
-        // Parse the field name and expected value
-        // Input: "error": "Missing password"
-        // Output: fieldName = "error", expectedValue = "Missing password"
-
-        String fieldName = "";
-        String expectedValue = "";
-
-        if (expectedPattern.contains(":")) {
-            String[] parts = expectedPattern.split(":", 2); // Split only on first colon
-
-            // Extract field name (remove quotes and whitespace)
-            fieldName = parts[0].trim()
-                    .replace("\"", "")
-                    .replace("'", "")
-                    .trim();
-
-            // Extract expected value (remove quotes, commas, and whitespace)
-            expectedValue = parts[1].trim()
-                    .replace("\"", "")
-                    .replace("'", "")
-                    .replace(",", "")
-                    .trim();
-        } else {
-            Assert.fail("Expected pattern must be in format: \"field\": \"value\"");
-        }
-
-        // Get the actual value from the JSON response using the field name
-        String actualValue = getApiClient().getJsonPath(fieldName);
-
-        // Compare expected vs actual
-        Assert.assertEquals(actualValue, expectedValue,
-                "Field '" + fieldName + "' does not match! " +
-                        "Expected: '" + expectedValue + "', but got: '" + actualValue + "'");
-
-        log.info("✓ Field '" + fieldName + "' matches expected value: " + expectedValue);
+        ResponseValidator.verifyJsonField(response, expectedPattern);
     }
 
     @Given("^I get the default list of users for on 1st page$")

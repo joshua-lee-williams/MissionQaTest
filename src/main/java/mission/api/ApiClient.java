@@ -99,5 +99,5 @@ public class ApiClient {
     public int getJsonPathInt(String jsonPath) {
         return response.jsonPath().getInt(jsonPath);
     }
-    
+
 }
