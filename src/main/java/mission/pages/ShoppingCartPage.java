@@ -14,10 +14,6 @@ import java.util.stream.Collectors;
 @Log4j2
 public class ShoppingCartPage extends BasePage {
 
-    public ShoppingCartPage() {
-        this.baseIdentifier = cartList;
-    }
-
     @FindBy(className = "cart_list")
     private WebElement cartList;
 

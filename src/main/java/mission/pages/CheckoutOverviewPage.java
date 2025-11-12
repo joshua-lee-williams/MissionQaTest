@@ -24,10 +24,6 @@ public class CheckoutOverviewPage extends BasePage {
     @FindBy(className = "summary_info")
     private WebElement summaryInfo;
 
-    public CheckoutOverviewPage() {
-        this.baseIdentifier = summaryInfo;
-    }
-
     /**
      * Extract numeric price from text like "$29.99" or "Item total: $79.96"
      */

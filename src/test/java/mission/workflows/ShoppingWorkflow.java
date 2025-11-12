@@ -7,6 +7,7 @@ import mission.pages.ShoppingCartPage;
 import org.testng.Assert;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @Log4j2
@@ -55,8 +56,12 @@ public class ShoppingWorkflow {
     }
 
     public void validateTaxRate(double taxRate) {
-        BigDecimal expectedTaxAmount = new BigDecimal(checkoutOverviewPage.getSubtotal() * taxRate / 100);
-        BigDecimal actualTaxAmount = new BigDecimal(checkoutOverviewPage.getTax());
+        BigDecimal subtotal = new BigDecimal(String.valueOf(checkoutOverviewPage.getSubtotal()));
+        BigDecimal rate = new BigDecimal(String.valueOf(taxRate));
+        BigDecimal actualTaxAmount = new BigDecimal(String.valueOf(checkoutOverviewPage.getTax()));
+        BigDecimal expectedTaxAmount = subtotal.multiply(rate)
+                .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+
         Assert.assertTrue((expectedTaxAmount.compareTo(actualTaxAmount) == 0),
                 String.format("Expected tax amount %s does not match actual tax amount %s.",
                         expectedTaxAmount, actualTaxAmount));

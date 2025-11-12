@@ -12,10 +12,6 @@ import java.time.Duration;
 @Log4j2
 public class InventoryPage extends BasePage {
 
-    public InventoryPage() {
-        this.baseIdentifier = inventoryList;
-    }
-
     // Page Elements (Web Elements) - using @FindBy annotations
     @FindBy(className = "inventory_list")
     private WebElement inventoryList;
