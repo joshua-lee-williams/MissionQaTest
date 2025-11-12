@@ -7,10 +7,6 @@ import org.openqa.selenium.support.FindBy;
 @Log4j2
 public class CheckoutPage extends BasePage {
 
-    public CheckoutPage() {
-        this.baseIdentifier = firstNameField;
-    }
-
     @FindBy(id = "first-name")
     private WebElement firstNameField;
 

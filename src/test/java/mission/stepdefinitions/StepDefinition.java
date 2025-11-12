@@ -18,6 +18,7 @@ import mission.workflows.ShoppingWorkflow;
 import org.testng.Assert;
 import lombok.extern.log4j.Log4j2;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -54,22 +55,22 @@ public class StepDefinition {
     }
 
     @Given("^I login with the following details$")
-    public void i_login_with_the_following_details(DataTable arg1)  {
-        Map<String, String> loginData = arg1.asMap(String.class, String.class);
-        loginWorkflow.login(loginData.get("userName"), loginData.get("Password"));
+    public void i_login_with_the_following_details(DataTable dataTable)  {
+        Map<String, String> loginData = dataTable.asMap(String.class, String.class);
+        loginWorkflow.login(loginData.get("userName"), loginData.get("password"));
     }
 
     @Given("^I add the following items to the basket$")
-    public void i_add_the_following_items_to_the_basket(DataTable arg1)  {
-        List<String> itemList = arg1.asList(String.class);
+    public void i_add_the_following_items_to_the_basket(DataTable dataTable)  {
+        List<String> itemList = dataTable.asList(String.class);
         shoppingWorkflow.addItemsToBasket(itemList);
     }
 
     @Given("^I should see (\\d+) items added to the shopping cart$")
     public void i_should_see_items_added_to_the_shopping_cart(int expectedNumberOfItems)  {
         int actualNumberOfItemsInShoppingCart = inventoryPage.getNumberOfItemsInShoppingCart();
-        Assert.assertEquals(actualNumberOfItemsInShoppingCart, expectedNumberOfItems, "Actual number of items in shopping cart does " +
-                "not match expected number of items.");
+        Assert.assertEquals(actualNumberOfItemsInShoppingCart, expectedNumberOfItems,
+                "Actual number of items in shopping cart does not match expected number of items.");
     }
 
     @Given("^I click on the shopping cart$")
@@ -86,9 +87,7 @@ public class StepDefinition {
     @Given("^I remove the following item:$")
     public void i_remove_the_following_item(DataTable itemsToRemove)  {
         List<String> itemsToRemoveList = itemsToRemove.asList();
-        for(String item:itemsToRemoveList) {
-            shoppingCartPage.removeItemFromBasket(item);
-        }
+        shoppingWorkflow.removeItemsFromBasket(itemsToRemoveList);
     }
 
     @Given("^I click on the CHECKOUT button$")
@@ -118,19 +117,15 @@ public class StepDefinition {
 
     @Then("^Item total will be equal to the total of items on the list$")
     public void item_total_will_be_equal_to_the_total_of_items_on_the_list()  {
-        Assert.assertTrue(checkoutOverviewPage.verifySubtotalIsCorrect());
+        Assert.assertTrue(shoppingWorkflow.verifySubtotalIsCorrect(), "Subtotal is not correct.");
     }
 
     @Then("^a Tax rate of (\\d+) % is applied to the total$")
     public void a_Tax_rate_of_is_applied_to_the_total(double taxRate)  {
-        double expectedTaxAmount = checkoutOverviewPage.getSubtotal() * taxRate / 100;
-        double actualTaxAmount = checkoutOverviewPage.getTax();
-        Assert.assertTrue(Math.abs(expectedTaxAmount - actualTaxAmount) < 0.01,
-                    "Expected tax amount does not match actual tax amount.");
+        shoppingWorkflow.validateTaxRate(taxRate);
     }
 
     // API Step definitions
-
     @Given("^I wait for the user list to load$")
     public void i_wait_for_user_list_to_load()  {
         log.info("=== Fetching Users with Delay ===");

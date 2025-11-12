@@ -5,7 +5,7 @@ Feature: Checkout items in the basket
     Given I am on the home page
     And I login with the following details
       | userName | standard_user     |
-      | Password | secret_sauce |
+      | password | secret_sauce |
 
     And I add the following items to the basket
       | Sauce Labs Backpack      |

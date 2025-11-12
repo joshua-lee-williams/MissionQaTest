@@ -1,17 +1,24 @@
 package mission.workflows;
 
 import lombok.extern.log4j.Log4j2;
+import mission.pages.CheckoutOverviewPage;
 import mission.pages.InventoryPage;
+import mission.pages.ShoppingCartPage;
 import org.testng.Assert;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Log4j2
 public class ShoppingWorkflow {
     InventoryPage inventoryPage;
+    ShoppingCartPage shoppingCartPage;
+    CheckoutOverviewPage checkoutOverviewPage;
 
     public ShoppingWorkflow() {
+        this.checkoutOverviewPage = new CheckoutOverviewPage();
         this.inventoryPage = new InventoryPage();
+        this.shoppingCartPage = new ShoppingCartPage();
     }
 
     public void addItemsToBasket(List<String> itemList) {
@@ -30,5 +37,28 @@ public class ShoppingWorkflow {
                     String.format("Item %s quantity mismatch!", i+1));
         }
         log.info("All items have correct quantity: " + expectedQuantity);
+    }
+
+    public void removeItemsFromBasket(List<String> itemsToRemoveList) {
+        for(String item:itemsToRemoveList) {
+            log.info("Removing item {} from basket.", item);
+            shoppingCartPage.removeItemFromBasket(item);
+            log.info("Successfully removed item {} from basket.", item);
+        }
+    }
+
+    public boolean verifySubtotalIsCorrect() {
+        BigDecimal calculatedTotal = new BigDecimal(checkoutOverviewPage.calculateItemsTotal());
+        BigDecimal displayedSubtotal = new BigDecimal(checkoutOverviewPage.getSubtotal());
+        boolean matches = (calculatedTotal.compareTo(displayedSubtotal) == 0);
+        return matches;
+    }
+
+    public void validateTaxRate(double taxRate) {
+        BigDecimal expectedTaxAmount = new BigDecimal(checkoutOverviewPage.getSubtotal() * taxRate / 100);
+        BigDecimal actualTaxAmount = new BigDecimal(checkoutOverviewPage.getTax());
+        Assert.assertTrue((expectedTaxAmount.compareTo(actualTaxAmount) == 0),
+                String.format("Expected tax amount %s does not match actual tax amount %s.",
+                        expectedTaxAmount, actualTaxAmount));
     }
 }

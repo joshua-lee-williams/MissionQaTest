@@ -6,10 +6,6 @@ import org.openqa.selenium.support.FindBy;
 
 public class HomePage extends BasePage {
 
-    public HomePage() {
-        baseIdentifier = loginButton;
-    }
-
     // Page Elements (Web Elements) - using @FindBy annotations
     @FindBy(id = "user-name")
     private WebElement usernameField;

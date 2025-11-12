@@ -86,14 +86,7 @@ public class CheckoutOverviewPage extends BasePage {
     /**
      * Verify subtotal = sum of item prices
      */
-    public boolean verifySubtotalIsCorrect() {
-        double calculatedTotal = calculateItemsTotal();
-        double displayedSubtotal = getSubtotal();
 
-        boolean matches = Math.abs(calculatedTotal - displayedSubtotal) < 0.01;
-        log.info("Subtotal match: " + matches);
-        return matches;
-    }
 
     /**
      * Verify that total = subtotal + tax
