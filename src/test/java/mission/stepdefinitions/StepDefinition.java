@@ -13,6 +13,7 @@ import mission.pages.HomePage;
 import mission.pages.InventoryPage;
 import mission.pages.ShoppingCartPage;
 import mission.utils.ResponseValidator;
+import mission.workflows.GetUserListWorkflow;
 import mission.workflows.LoginWorkflow;
 import mission.workflows.ShoppingWorkflow;
 import org.testng.Assert;
@@ -32,6 +33,7 @@ public class StepDefinition {
     ShoppingCartPage shoppingCartPage = new ShoppingCartPage();
     CheckoutPage checkoutPage = new CheckoutPage();
     CheckoutOverviewPage checkoutOverviewPage = new CheckoutOverviewPage();
+    GetUserListWorkflow getUserListWorkflow = new GetUserListWorkflow();
     LoginWorkflow loginWorkflow = new LoginWorkflow();
     ShoppingWorkflow shoppingWorkflow = new ShoppingWorkflow();
     private ApiClient apiClient;
@@ -127,21 +129,7 @@ public class StepDefinition {
     // API Step definitions
     @Given("^I wait for the user list to load$")
     public void i_wait_for_user_list_to_load()  {
-        log.info("=== Fetching Users with Delay ===");
-
-        // ReqRes API has a delay parameter: /api/users?delay=3
-        long startTime = System.currentTimeMillis();
-        response = getApiClient().get("/api/users?delay=3");
-        long endTime = System.currentTimeMillis();
-
-        long responseTime = endTime - startTime;
-        log.info("Response received after: " + responseTime + " ms");
-
-        // Verify we got a successful response
-        Assert.assertEquals(getApiClient().getStatusCode(), 200,
-                "Failed to load user list");
-
-        log.info("User list loaded successfully with delay");
+        getUserListWorkflow.getUsersWithDelay();
     }
 
     @Then("^I should see that every user has a unique id$")
