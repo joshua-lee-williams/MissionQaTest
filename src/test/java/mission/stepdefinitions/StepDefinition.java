@@ -7,23 +7,22 @@ import io.cucumber.java.en.Then;
 import io.cucumber.datatable.DataTable;
 import io.restassured.response.Response;
 import mission.api.ApiClient;
+import mission.context.TestContext;
 import mission.pages.CheckoutOverviewPage;
 import mission.pages.CheckoutPage;
 import mission.pages.HomePage;
 import mission.pages.InventoryPage;
 import mission.pages.ShoppingCartPage;
 import mission.utils.ResponseValidator;
-import mission.workflows.GetUserListWorkflow;
-import mission.workflows.LoginWorkflow;
-import mission.workflows.ShoppingWorkflow;
+import mission.workflows.api.GetUserListWorkflow;
+import mission.workflows.ui.LoginWorkflow;
+import mission.workflows.ui.ShoppingWorkflow;
 import org.testng.Assert;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Log4j2
 public class StepDefinition {
@@ -33,7 +32,6 @@ public class StepDefinition {
     ShoppingCartPage shoppingCartPage = new ShoppingCartPage();
     CheckoutPage checkoutPage = new CheckoutPage();
     CheckoutOverviewPage checkoutOverviewPage = new CheckoutOverviewPage();
-    GetUserListWorkflow getUserListWorkflow = new GetUserListWorkflow();
     LoginWorkflow loginWorkflow = new LoginWorkflow();
     ShoppingWorkflow shoppingWorkflow = new ShoppingWorkflow();
     private ApiClient apiClient;
@@ -41,13 +39,8 @@ public class StepDefinition {
     private int totalUsers;
     private int totalPages;
     private List<Integer> allUserIds = new ArrayList<>();
-
-    private ApiClient getApiClient() {
-        if (apiClient == null) {
-            apiClient = new ApiClient();
-        }
-        return apiClient;
-    }
+    TestContext testContext = new TestContext();
+    GetUserListWorkflow getUserListWorkflow = new GetUserListWorkflow(testContext);
 
     // UI Step Definitions
     @Given("^I am on the home page$")
@@ -134,31 +127,8 @@ public class StepDefinition {
 
     @Then("^I should see that every user has a unique id$")
     public void i_should_see_unique_user_ids()  {
-        log.info("=== Verifying Unique User IDs ===");
+        getUserListWorkflow.validateUniqueUserIds();
 
-        // Get all users from the response
-        List<Map<String, Object>> users = response.jsonPath().getList("data");
-
-        // Extract all user IDs
-        List<Integer> userIds = new ArrayList<>();
-        for (Map<String, Object> user : users) {
-            Integer userId = (Integer) user.get("id");
-            userIds.add(userId);
-            log.info("User ID: " + userId +
-                    ", Name: " + user.get("first_name") + " " + user.get("last_name"));
-        }
-
-        // Check for duplicates using a Set
-        Set<Integer> uniqueIds = new HashSet<>(userIds);
-
-        log.info("Total users: " + userIds.size());
-        log.info("Unique IDs: " + uniqueIds.size());
-
-        // Verify all IDs are unique
-        Assert.assertEquals(userIds.size(), uniqueIds.size(),
-                "Duplicate user IDs found! Some users have the same ID.");
-
-        log.info("All user IDs are unique");
     }
 
     @Then("^I should get a response code of (\\d+)$")
@@ -174,71 +144,24 @@ public class StepDefinition {
 
     @Given("^I get the default list of users for on 1st page$")
     public void i_get_first_page_users() {
-        log.info("=== Getting first page of users ===");
-
-        // Get page 1
-        response = getApiClient().get("/api/users?page=1");
-
-        // Extract total users and total pages from response
-        totalUsers = getApiClient().getJsonPathInt("total");
-        totalPages = getApiClient().getJsonPathInt("total_pages");
-
-        log.info("Total users: " + totalUsers);
-        log.info("Total pages: " + totalPages);
-
-        // Verify we got a successful response
-        Assert.assertEquals(getApiClient().getStatusCode(), 200,
-                "Failed to get first page of users");
+        getUserListWorkflow.getFirstPageOfUsers();
     }
 
     @When("^I get the list of all users within every page$")
     public void i_get_all_users_from_all_pages() {
-        log.info("=== Fetching all users from all pages ===");
-        if (allUserIds != null) {
-            allUserIds.clear(); // Clear the list before populating
-        }
-
-        // Loop through all pages
-        for (int page = 1; page <= totalPages; page++) {
-            log.info("Fetching page " + page + " of " + totalPages);
-
-            response = getApiClient().get("/api/users?page=" + page);
-
-            // Verify successful response
-            if (getApiClient().getStatusCode() != 200) {
-                Assert.fail("Failed to fetch page " + page);
-            }
-
-            // Extract user IDs from the data array
-            List<Map<String, Object>> users = response.jsonPath().getList("data");
-
-            for (Map<String, Object> user : users) {
-                Integer userId = (Integer) user.get("id");
-                allUserIds.add(userId);
-                log.info("  User ID: " + userId +
-                        ", Name: " + user.get("first_name") + " " + user.get("last_name"));
-            }
-        }
-
-        log.info("Total user IDs collected: " + allUserIds.size());
+        allUserIds = getUserListWorkflow.getAllPagesOfUsers();
     }
 
     @Then("^I should see total users count equals the number of user ids$")
     public void verify_total_users_equals_collected_ids() {
-        log.info("=== Verification ===");
-        log.info("Expected total users: " + totalUsers);
-        log.info("Actual user IDs collected: " + allUserIds.size());
-
-        Assert.assertEquals(allUserIds.size(), totalUsers,
-                "Total users count does not match the number of user IDs collected!");
-
-        log.info("✓ Verification passed: Total users = " + totalUsers);
+        Assert.assertEquals(allUserIds.size(), testContext.getTotalUsers(),
+                String.format("Total users count %s does not match the number of user IDs collected %s", totalUsers, allUserIds.size()));
     }
 
     @Given("I make a search for user {int}")
     public void iMakeASearchForUser(int userIDToSearch) {
         log.info("Making a search for userID: " + userIDToSearch);
-        response = getApiClient().get("/api/users/" + userIDToSearch);
+        response = testContext.getApiClient().get("/api/users/" + userIDToSearch);
     }
 
     @Then("I should see the following user data")
@@ -270,10 +193,10 @@ public class StepDefinition {
         String requestBody = String.format("{\"name\": \"%s\", \"job\": \"%s\"}", name, job);
 
         // Send POST request
-        response = getApiClient().post("/api/users", requestBody);
+        response = testContext.getApiClient().post("/api/users", requestBody);
 
         // Store response for verification
-        log.info("User created with status: {}", getApiClient().getStatusCode());
+        log.info("User created with status: {}", testContext.getApiClient().getStatusCode());
     }
 
     @Then("^response should contain the following data$")
@@ -281,7 +204,7 @@ public class StepDefinition {
         List<String> expectedFields = dataTable.asList(String.class);
 
         for (String field : expectedFields) {
-            String fieldValue = getApiClient().getJsonPath(field);
+            String fieldValue = testContext.getApiClient().getJsonPath(field);
             Assert.assertNotNull(fieldValue, "Field '" + field + "' not found in response");
             log.info("✓ {}: {}",  field, fieldValue);
         }
@@ -312,7 +235,7 @@ public class StepDefinition {
         requestBody += "}";
 
         // Send POST request
-        response = getApiClient().post("/api/login", requestBody);
+        response = testContext.getApiClient().post("/api/login", requestBody);
     }
 
 }

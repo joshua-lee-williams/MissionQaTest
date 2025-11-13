@@ -1,4 +1,4 @@
-package mission.workflows;
+package mission.workflows.ui;
 
 import lombok.extern.log4j.Log4j2;
 import mission.pages.CheckoutOverviewPage;

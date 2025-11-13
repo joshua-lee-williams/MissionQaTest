@@ -1,4 +1,4 @@
-package mission.workflows;
+package mission.workflows.ui;
 import mission.pages.HomePage;
 
 public class LoginWorkflow {

@@ -4,9 +4,8 @@ import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import lombok.extern.log4j.Log4j2;
+import mission.context.TestContext;
 import mission.utils.LoadProp;
-
-import java.util.List;
 
 @Log4j2
 public class ApiClient {
@@ -15,14 +14,17 @@ public class ApiClient {
     private String apiKey;
     private Response response;
     private RequestSpecification request;
+    TestContext testContext;
 
-    public ApiClient() {
+    public ApiClient(TestContext testContext) {
+        this.testContext = testContext;
         this.baseUrl = "https://reqres.in";
         this.apiKey = LoadProp.getProperty("apiKey");
         RestAssured.baseURI = baseUrl;
     }
 
-    public ApiClient(String baseUrl) {
+    public ApiClient(TestContext testContext, String baseUrl) {
+        this.testContext = testContext;
         this.baseUrl = baseUrl;
         this.apiKey = LoadProp.getProperty("apiKey");
         RestAssured.baseURI = baseUrl;
@@ -51,6 +53,7 @@ public class ApiClient {
         log.info("Status Code: " + response.getStatusCode());
         log.info("Response Body: " + response.getBody().asString());
 
+        testContext.setLastResponse(response);
         return response;
     }
 
@@ -59,16 +62,16 @@ public class ApiClient {
      */
     public Response post(String endpoint, String requestBody) {
         log.info("=== POST Request ===");
-        log.info("URL: " + baseUrl + endpoint);
-        log.info("Request Body: " + requestBody);
+        log.info("URL: {}{}", baseUrl, endpoint);
+        log.info("Request Body: {}", requestBody);
 
         response = initializeRequest()
                 .body(requestBody)
                 .post(endpoint);
 
-        log.info("Status Code: " + response.getStatusCode());
-        log.info("Response Body: " + response.getBody().asString());
-
+        log.info("Status Code: {}", response.getStatusCode());
+        log.info("Response Body: {}", response.getBody().asString());
+        testContext.setLastResponse(response);
         return response;
     }
 
