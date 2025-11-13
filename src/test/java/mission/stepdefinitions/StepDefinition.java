@@ -165,16 +165,9 @@ public class StepDefinition {
     }
 
     @Then("I should see the following user data")
-    public void IShouldSeeFollowingUserData(DataTable dt) {
-        Map<String, String> expectedUserData = dt.asMap();
-        log.info(expectedUserData.toString());
-        String expectedFirstName = expectedUserData.get("first_name");
-        String expectedEmail = expectedUserData.get("email");
-        String actualFirstName = response.jsonPath().getString("data.first_name");
-        String actualEmail = response.jsonPath().getString("data.email");
-
-        Assert.assertEquals(expectedFirstName, actualFirstName);
-        Assert.assertEquals(expectedEmail, actualEmail);
+    public void IShouldSeeFollowingUserData(DataTable dataTable) {
+        Map<String, String> expectedUserData = dataTable.asMap();
+        ResponseValidator.validateExpectedUserData(testContext.getLastResponse(), expectedUserData);
     }
 
     @Then("I receive error code {int} in response")
