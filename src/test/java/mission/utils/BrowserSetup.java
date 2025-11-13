@@ -6,6 +6,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.safari.SafariDriver;
 import org.testng.Assert;
 
 import java.text.MessageFormat;
@@ -33,7 +34,6 @@ public class BrowserSetup extends BasePage {
         browser = LoadProp.getProperty("Browser");
 
         if (browser.equalsIgnoreCase("Chrome")) {
-            //System.setProperty("webdriver.chrome.driver", CHROME_WIN);
             WebDriverManager.chromedriver().setup();
             ChromeOptions options = new ChromeOptions();
             Map<String, Object> prefs = new HashMap<>();
@@ -43,19 +43,18 @@ public class BrowserSetup extends BasePage {
             // Initialize ChromeDriver with these options
             driver = new ChromeDriver(options);
         } else if (browser.equalsIgnoreCase("edge")) {
-            //System.setProperty("webdriver.edge.driver", EDGE);
             WebDriverManager.edgedriver().setup();
             driver = new EdgeDriver();
         } else if (browser.equalsIgnoreCase("Firefox")) {
             WebDriverManager.firefoxdriver().setup();
-            //System.setProperty("webdriver.gecko.driver", FIREFOX_WIN);
             driver = new FirefoxDriver();
+        } else if (browser.equalsIgnoreCase(("Safari"))) {
+            WebDriverManager.safaridriver().setup();
+            driver = new SafariDriver();
         } else if (browser.equalsIgnoreCase("chromeMac")) {
-            //System.setProperty("webdriver.chrome.driver", CHROME_MAC);
             WebDriverManager.chromedriver().setup();
             driver = new ChromeDriver();
         } else if (browser.equalsIgnoreCase("chromeHeadless")) {
-            //System.setProperty("webdriver.chrome.driver", CHROME_MAC);
             ChromeOptions chromeOptions = new ChromeOptions();
             chromeOptions.addArguments("--headless");
             chromeOptions.addArguments("start-maximized");

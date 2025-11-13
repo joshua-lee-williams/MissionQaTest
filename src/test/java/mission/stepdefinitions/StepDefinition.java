@@ -6,9 +6,7 @@ import io.cucumber.java.en.When;
 import io.cucumber.java.en.Then;
 import io.cucumber.datatable.DataTable;
 import io.restassured.response.Response;
-import mission.api.ApiClient;
 import mission.context.TestContext;
-import mission.pages.CheckoutOverviewPage;
 import mission.pages.CheckoutPage;
 import mission.pages.HomePage;
 import mission.pages.InventoryPage;
@@ -33,13 +31,9 @@ public class StepDefinition {
     InventoryPage inventoryPage = new InventoryPage();
     ShoppingCartPage shoppingCartPage = new ShoppingCartPage();
     CheckoutPage checkoutPage = new CheckoutPage();
-    CheckoutOverviewPage checkoutOverviewPage = new CheckoutOverviewPage();
     LoginWorkflow loginWorkflow = new LoginWorkflow();
     ShoppingWorkflow shoppingWorkflow = new ShoppingWorkflow();
-    private ApiClient apiClient;
     private Response response;
-    private int totalUsers;
-    private int totalPages;
     private List<Integer> allUserIds = new ArrayList<>();
     TestContext testContext = new TestContext();
     ApiLoginWorkflow apiLoginWorkflow = new ApiLoginWorkflow(testContext);
@@ -160,12 +154,12 @@ public class StepDefinition {
     @Then("^I should see total users count equals the number of user ids$")
     public void verify_total_users_equals_collected_ids() {
         Assert.assertEquals(allUserIds.size(), testContext.getTotalUsers(),
-                String.format("Total users count %s does not match the number of user IDs collected %s", totalUsers, allUserIds.size()));
+                String.format("Total users count %s does not match the number of user IDs collected %s", testContext.getTotalUsers(), allUserIds.size()));
     }
 
     @Given("I make a search for user {int}")
     public void iMakeASearchForUser(int userIDToSearch) {
-        log.info("Making a search for userID: " + userIDToSearch);
+        log.info("Making a search for userID: {}", userIDToSearch);
         response = testContext.getApiClient().get("/api/users/" + userIDToSearch);
     }
 
