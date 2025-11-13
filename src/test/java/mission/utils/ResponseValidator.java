@@ -5,12 +5,23 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.response.Response;
 import lombok.extern.log4j.Log4j2;
+import mission.api.ApiClient;
+import mission.context.TestContext;
 import org.testng.Assert;
 
+import java.util.List;
 import java.util.Map;
 
 @Log4j2
 public class ResponseValidator {
+    ApiClient apiClient;
+    TestContext testContext;
+
+    public ResponseValidator(TestContext testContext) {
+        this.testContext = testContext;
+        this.apiClient = testContext.getApiClient();
+    }
+
     public static void verifyJsonField(Response response, String expectedJson) throws JsonProcessingException {
         // Parse expected JSON
         JsonNode expected = new ObjectMapper().readTree("{" + expectedJson + "}");
@@ -38,5 +49,13 @@ public class ResponseValidator {
                 String.format("Expected first name %s does not match actual first name %s", expectedFirstName, actualFirstName));
         Assert.assertEquals(expectedEmail, actualEmail,
                 String.format("Expected email %s does not match actual email %s", expectedEmail, actualEmail));
+    }
+
+    public void validateResponseContainsFields(List<String> expectedFields) {
+        for (String field : expectedFields) {
+            String fieldValue = testContext.getApiClient().getJsonPath(field);
+            Assert.assertNotNull(fieldValue, "Field '" + field + "' not found in response");
+            log.info("✓ {}: {}",  field, fieldValue);
+        }
     }
 }

@@ -14,6 +14,7 @@ import mission.pages.HomePage;
 import mission.pages.InventoryPage;
 import mission.pages.ShoppingCartPage;
 import mission.utils.ResponseValidator;
+import mission.workflows.api.CreateUserWorkflow;
 import mission.workflows.api.GetUserListWorkflow;
 import mission.workflows.ui.LoginWorkflow;
 import mission.workflows.ui.ShoppingWorkflow;
@@ -40,7 +41,9 @@ public class StepDefinition {
     private int totalPages;
     private List<Integer> allUserIds = new ArrayList<>();
     TestContext testContext = new TestContext();
+    CreateUserWorkflow createUserWorkflow = new CreateUserWorkflow(testContext);
     GetUserListWorkflow getUserListWorkflow = new GetUserListWorkflow(testContext);
+    ResponseValidator responseValidator = new ResponseValidator(testContext);
 
     // UI Step Definitions
     @Given("^I am on the home page$")
@@ -178,29 +181,13 @@ public class StepDefinition {
 
     @Given("^I create a user with following (.+) (.+)$")
     public void i_create_user_with_name_and_job(String name, String job)  {
-        log.info("=== Creating User ===");
-        log.info("Name: {}", name);
-        log.info("Job: {}", job);
-
-        // Build JSON request body
-        String requestBody = String.format("{\"name\": \"%s\", \"job\": \"%s\"}", name, job);
-
-        // Send POST request
-        response = testContext.getApiClient().post("/api/users", requestBody);
-
-        // Store response for verification
-        log.info("User created with status: {}", testContext.getApiClient().getStatusCode());
+        createUserWorkflow.createUserWithNameAndJob(name, job);
     }
 
     @Then("^response should contain the following data$")
     public void response_should_contain_data(DataTable dataTable)  {
         List<String> expectedFields = dataTable.asList(String.class);
-
-        for (String field : expectedFields) {
-            String fieldValue = testContext.getApiClient().getJsonPath(field);
-            Assert.assertNotNull(fieldValue, "Field '" + field + "' not found in response");
-            log.info("✓ {}: {}",  field, fieldValue);
-        }
+        responseValidator.validateResponseContainsFields(expectedFields);
     }
 
     @Given("^I login unsuccessfully with the following data$")
