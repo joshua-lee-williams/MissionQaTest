@@ -14,6 +14,7 @@ import mission.pages.HomePage;
 import mission.pages.InventoryPage;
 import mission.pages.ShoppingCartPage;
 import mission.utils.ResponseValidator;
+import mission.workflows.api.ApiLoginWorkflow;
 import mission.workflows.api.CreateUserWorkflow;
 import mission.workflows.api.GetUserListWorkflow;
 import mission.workflows.ui.LoginWorkflow;
@@ -41,6 +42,7 @@ public class StepDefinition {
     private int totalPages;
     private List<Integer> allUserIds = new ArrayList<>();
     TestContext testContext = new TestContext();
+    ApiLoginWorkflow apiLoginWorkflow = new ApiLoginWorkflow(testContext);
     CreateUserWorkflow createUserWorkflow = new CreateUserWorkflow(testContext);
     GetUserListWorkflow getUserListWorkflow = new GetUserListWorkflow(testContext);
     ResponseValidator responseValidator = new ResponseValidator(testContext);
@@ -136,13 +138,13 @@ public class StepDefinition {
 
     @Then("^I should get a response code of (\\d+)$")
     public void iShouldGetAResponseCodeOf(int expectedResponseCode) {
-        Assert.assertEquals(expectedResponseCode, response.getStatusCode());
+        Assert.assertEquals(expectedResponseCode, testContext.getLastResponse().getStatusCode());
     }
 
     @Then("^I should see the following response message:$")
     public void i_should_see_response_message(DataTable dataTable) throws JsonProcessingException {
         String expectedPattern = dataTable.asList(String.class).get(0);
-        ResponseValidator.verifyJsonField(response, expectedPattern);
+        ResponseValidator.verifyJsonField(testContext.getLastResponse(), expectedPattern);
     }
 
     @Given("^I get the default list of users for on 1st page$")
@@ -192,30 +194,8 @@ public class StepDefinition {
 
     @Given("^I login unsuccessfully with the following data$")
     public void i_login_unsuccessfully(DataTable dataTable)  {
-        // Convert DataTable to Map
         Map<String, String> loginData = dataTable.asMap(String.class, String.class);
-
-        String email = loginData.get("Email");
-        String password = loginData.getOrDefault("Password", "");
-        if (password == null) { password = "";}
-
-        log.info("=== Attempting Login ===");
-        log.info("Email: {}", email);
-        log.info("Password: {}", (password.isEmpty() ? "(empty)" : password));
-
-        // Build request body
-        String requestBody = "{"
-                + "\"email\": \"" + email + "\"";
-
-        // Only add password if not empty
-        if (password != null && !password.isEmpty()) {
-            requestBody += ",\"password\": \"" + password + "\"";
-        }
-
-        requestBody += "}";
-
-        // Send POST request
-        response = testContext.getApiClient().post("/api/login", requestBody);
+        apiLoginWorkflow.loginUnsuccessfully(loginData.get("Email"), loginData.getOrDefault("Password", ""));
     }
 
 }
